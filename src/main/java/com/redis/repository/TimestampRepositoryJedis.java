@@ -1,16 +1,18 @@
 package com.redis.repository;
 
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.ZAddParams;
 
-@RequiredArgsConstructor
 public class TimestampRepositoryJedis implements TimestampRepository {
 
     private static final String KEY = "timestamps";
 
     private final Jedis jedis;
+
+    public TimestampRepositoryJedis(Jedis jedis) {
+        this.jedis = jedis;
+    }
 
     @Override
     public Boolean addNewTimestamp(String key, Long value) {

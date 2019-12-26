@@ -7,14 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class UpdatesService {
 
     private final UpdatesRepository updatesRepository;
-
     private final TimestampRepository timestampRepository;
+
+    public UpdatesService(UpdatesRepository updatesRepository, TimestampRepository timestampRepository) {
+        this.updatesRepository = updatesRepository;
+        this.timestampRepository = timestampRepository;
+    }
 
     public boolean addNewUpdates(String id, Long timestamp, List<String> updates) {
         boolean result = updatesRepository.addNewUpdates(id, timestamp, updates);
@@ -27,7 +29,7 @@ public class UpdatesService {
         Long max = byId.keySet()
                 .stream()
                 .max(Comparator.comparingLong(l -> l))
-                .orElseThrow();
+                .orElseThrow(RuntimeException::new);
         List<Long> timestamps = byId.keySet()
                 .stream()
                 .filter(timestamp -> timestamp < max)

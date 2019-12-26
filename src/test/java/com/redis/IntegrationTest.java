@@ -49,17 +49,18 @@ public class IntegrationTest {
         Assertions.assertTrue(
                 updatesService.addNewUpdates("anune", 1001L, Collections.singletonList("update")));
 
-        Assertions.assertEquals(updatesRepositoryJedis.getById("anune"),
-                Map.of(1001L, Collections.singletonList("update")));
+
+        Map<Long, List<String>> expected1 = new HashMap<>();
+        expected1.put(1001L, Collections.singletonList("update"));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("anune"),expected1);
 
         Assertions.assertTrue(updatesService.addNewUpdates(
                 "anune", 1002L, Collections.singletonList("update")));
 
-        Assertions.assertEquals(updatesRepositoryJedis.getById("anune"),
-                Map.of(
-                        1001L, Collections.singletonList("update"),
-                        1002L, Collections.singletonList("update")
-                ));
+        Map<Long, List<String>> expected2 = new HashMap<>();
+        expected2.put(1001L, Collections.singletonList("update"));
+        expected2.put(1002L, Collections.singletonList("update"));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("anune"), expected2);
     }
 
     @Test
@@ -75,8 +76,9 @@ public class IntegrationTest {
 
         Assertions.assertEquals(updatesService.deleteOldUpdates("dou"), true);
 
-        Assertions.assertEquals(updatesRepositoryJedis.getById("dou"),
-                Map.of(1003L, Collections.singletonList("update")));
+        Map<Long, List<String>> expected = new HashMap<>();
+        expected.put(1003L, Collections.singletonList("update"));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dou"), expected);
 
     }
 
@@ -169,7 +171,8 @@ public class IntegrationTest {
         Assertions.assertEquals(updatesRepositoryJedis.deleteTimestamps(
                 "dt", Arrays.asList(1000L, 1001L)), 2L);
 
-        Assertions.assertEquals(updatesRepositoryJedis.getById("dt"),
-                Map.of(1002L, Arrays.asList("update1", "update1")));
+        Map<Long, List<String>> expected = new HashMap<>();
+        expected.put(1002L, Arrays.asList("update1", "update1"));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dt"), expected);
     }
 }
