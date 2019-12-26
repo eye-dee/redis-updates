@@ -13,13 +13,13 @@ public class RedisTestConfiguration {
     @Bean
     @Primary
     public ReactiveRedisConnectionFactory reactiveRedisConnectionFactoryTest() {
-        return new LettuceConnectionFactory("localhost", Integer.parseInt(System.getProperty("redis.port")));
+        return new LettuceConnectionFactory("localhost", 6379);
     }
 
     @Bean
     @Primary
     public Jedis jedisTest() {
-        return new Jedis("localhost", Integer.parseInt(System.getProperty("redis.port")));
+        return new Jedis("localhost", 6379);
     }
 
 }
