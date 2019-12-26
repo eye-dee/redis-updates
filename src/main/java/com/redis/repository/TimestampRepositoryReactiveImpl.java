@@ -40,9 +40,10 @@ public class TimestampRepositoryReactiveImpl implements TimestampRepositoryReact
                 .flatMap(keys -> reactiveValueOperations.multiGet(keys));
     }
 
-    public Mono<Properties> info() {
+    public Mono<String> info() {
         return reactiveRedisTemplate.execute(connection -> connection.serverCommands().info())
                 .next()
+                .map(Properties::toString)
                 .log();
     }
 }

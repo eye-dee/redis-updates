@@ -1,7 +1,7 @@
 package com.redis.repository;
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 
 public interface TimestampRepository {
 
@@ -9,10 +9,10 @@ public interface TimestampRepository {
 
     Boolean overrideOldValue(String key, Long value);
 
-    Long getTimestampForKey(String key);
+    Optional<Long> getTimestampForKey(String key);
 
     List<Long> getAll();
 
-    Properties info();
+    String info();
 
 }

@@ -14,6 +14,6 @@ public interface TimestampRepositoryReactive {
 
     Mono<List<Long>> getAll();
 
-    Mono<Properties> info();
+    Mono<String> info();
 
 }

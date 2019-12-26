@@ -22,7 +22,7 @@ public class TimestampReactiveWrapper implements TimestampRepositoryReactive {
 
     @Override
     public Mono<Long> getTimestampForKey(String key) {
-        return Mono.just(timestampRepository.getTimestampForKey(key));
+        return Mono.justOrEmpty(timestampRepository.getTimestampForKey(key));
     }
 
     @Override
@@ -31,7 +31,7 @@ public class TimestampReactiveWrapper implements TimestampRepositoryReactive {
     }
 
     @Override
-    public Mono<Properties> info() {
+    public Mono<String> info() {
         return Mono.just(timestampRepository.info());
     }
 }

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
@@ -12,7 +14,14 @@ import reactor.test.StepVerifier;
 class UpdatesRepositoryTest extends AbstractSpringIntegrationTest {
 
     @Autowired
-    private UpdatesRepositoryReactiveImpl updatesRepository;
+    private UpdatesRepositoryJedis updatesRepositoryJedis;
+
+    private UpdatesRepositoryReactive updatesRepository;
+
+    @BeforeEach
+    public void setUp() {
+        updatesRepository = new UpdatesReactiveWrapper(updatesRepositoryJedis);
+    }
 
     @Test
     public void addNewUpdates() {

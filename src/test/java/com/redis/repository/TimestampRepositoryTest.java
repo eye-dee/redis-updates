@@ -2,6 +2,7 @@ package com.redis.repository;
 
 import com.redis.AbstractSpringIntegrationTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
@@ -9,7 +10,14 @@ import reactor.test.StepVerifier;
 class TimestampRepositoryTest extends AbstractSpringIntegrationTest {
 
     @Autowired
-    TimestampRepositoryReactiveImpl timestampRepository;
+    private TimestampRepositoryJedis timestampRepositoryJedis;
+
+    private TimestampRepositoryReactive timestampRepository;
+
+    @BeforeEach
+    public void setUp() {
+        timestampRepository = new TimestampReactiveWrapper(timestampRepositoryJedis);
+    }
 
     @Test
     public void addNewTimestamp() {

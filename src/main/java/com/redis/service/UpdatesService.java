@@ -50,7 +50,7 @@ public class UpdatesService {
                 .map(list -> list.stream().max(Long::compareTo).orElseThrow());
     }
 
-    public Mono<Properties> getDbState() {
+    public Mono<String> getDbState() {
         return timestampRepository.info();
     }
 
