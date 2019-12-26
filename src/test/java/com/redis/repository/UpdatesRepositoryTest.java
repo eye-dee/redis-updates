@@ -16,44 +16,44 @@ class UpdatesRepositoryTest extends AbstractSpringIntegrationTest {
 
     @Test
     public void addNewUpdates() {
-        StepVerifier.create(updatesRepository.addNewUpdates("anu", 1000L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(1L, 1000L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.addNewUpdates("anu", 1001L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(1L, 1001L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
     }
 
     @Test
     public void checkKeyExistsTrue() {
-        StepVerifier.create(updatesRepository.addNewUpdates("cket", 1001L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(2L, 1001L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.keyExists("cket", 1001L))
+        StepVerifier.create(updatesRepository.keyExists(2L, 1001L))
                 .expectNext(true)
                 .verifyComplete();
     }
 
     @Test
     public void checkKeyExistsFalse() {
-        StepVerifier.create(updatesRepository.addNewUpdates("ckef", 1001L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(3L, 1001L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.keyExists("ckef", 1000L))
+        StepVerifier.create(updatesRepository.keyExists(3L, 1000L))
                 .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
     void getById() {
-        StepVerifier.create(updatesRepository.addNewUpdates("gbi", 1000L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(4L, 1000L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.addNewUpdates("gbi", 1001L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(4L, 1001L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
@@ -61,30 +61,30 @@ class UpdatesRepositoryTest extends AbstractSpringIntegrationTest {
         actual.put(1000L, Arrays.asList("update1", "update1"));
         actual.put(1001L, Arrays.asList("update1", "update1"));
 
-        StepVerifier.create(updatesRepository.getById("gbi"))
+        StepVerifier.create(updatesRepository.getById(4L))
                 .expectNext(actual)
                 .verifyComplete();
     }
 
     @Test
     public void deleteTimestamps() {
-        StepVerifier.create(updatesRepository.addNewUpdates("dt", 1000L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(5L, 1000L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.addNewUpdates("dt", 1001L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(5L, 1001L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.addNewUpdates("dt", 1002L, Arrays.asList("update1", "update1")))
+        StepVerifier.create(updatesRepository.addNewUpdates(5L, 1002L, Arrays.asList("update1", "update1")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.deleteTimestamps("dt", Arrays.asList(1000L, 1001L)))
+        StepVerifier.create(updatesRepository.deleteTimestamps(5L, Arrays.asList(1000L, 1001L)))
                 .expectNext(2L)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.getById("dt"))
+        StepVerifier.create(updatesRepository.getById(5L))
                 .expectNext(Map.of(1002L, Arrays.asList("update1", "update1")))
                 .verifyComplete();
     }

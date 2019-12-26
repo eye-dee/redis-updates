@@ -6,13 +6,13 @@ import reactor.core.publisher.Mono;
 
 public interface TimestampRepositoryReactive {
 
-    Mono<Boolean> addNewTimestamp(String key, Long value);
+    Mono<Boolean> addNewTimestamp(Long key, Long value);
 
-    Mono<Boolean> overrideOldValue(String key, Long value);
+    Mono<Boolean> overrideOldValue(Long key, Long value);
 
-    Mono<Long> getTimestampForKey(String key);
+    Mono<Long> getTimestampForKey(Long key);
 
-    Mono<List<Long>> getAll();
+    Mono<Long> getOldest();
 
     Mono<Properties> info();
 

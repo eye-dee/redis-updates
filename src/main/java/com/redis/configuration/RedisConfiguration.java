@@ -31,7 +31,7 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public ReactiveRedisTemplate<String, Map<Long, List<String>>> reactiveRedisTemplateUpdatesMap(
+    public ReactiveRedisTemplate<Long, Map<Long, List<String>>> reactiveRedisTemplateUpdatesMap(
             ReactiveRedisConnectionFactory reactiveRedisConnectionFactory,
             ObjectMapper mapper,
             StringRedisSerializer keySerializer
@@ -45,11 +45,11 @@ public class RedisConfiguration {
         Jackson2JsonRedisSerializer<Long> longSerializer = new Jackson2JsonRedisSerializer<>(Long.class);
         Jackson2JsonRedisSerializer<Object> listJacksonSerializer = new Jackson2JsonRedisSerializer<>(listOfString);
 
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Map<Long, List<String>>> builder =
-                RedisSerializationContext.newSerializationContext(keySerializer);
-        RedisSerializationContext<String, Map<Long, List<String>>> context =
+        RedisSerializationContext.RedisSerializationContextBuilder<Long, Map<Long, List<String>>> builder =
+                RedisSerializationContext.newSerializationContext(longSerializer);
+        RedisSerializationContext<Long, Map<Long, List<String>>> context =
                 builder.value(valueSerializer)
-                        .key(keySerializer)
+                        .key(longSerializer)
                         .hashKey(longSerializer)
                         .hashValue(listJacksonSerializer)
                         .build();

@@ -13,40 +13,40 @@ class TimestampRepositoryTest extends AbstractSpringIntegrationTest {
 
     @Test
     public void addNewTimestamp() {
-        StepVerifier.create(timestampRepository.addNewTimestamp("ant", 1000L))
+        StepVerifier.create(timestampRepository.addNewTimestamp(6L, 1000L))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.addNewTimestamp("ant", 2000L))
+        StepVerifier.create(timestampRepository.addNewTimestamp(6L, 2000L))
                 .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
     public void overrideOldValue() {
-        StepVerifier.create(timestampRepository.overrideOldValue("oov", 1000L))
+        StepVerifier.create(timestampRepository.overrideOldValue(7L, 1000L))
                 .expectNext(false)
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.addNewTimestamp("oov", 2000L))
+        StepVerifier.create(timestampRepository.addNewTimestamp(7L, 2000L))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.overrideOldValue("oov", 1000L))
+        StepVerifier.create(timestampRepository.overrideOldValue(7L, 1000L))
                 .expectNext(true)
                 .verifyComplete();
     }
 
     @Test
     public void getTimestampForKey() {
-        StepVerifier.create(timestampRepository.getTimestampForKey("gtfk"))
+        StepVerifier.create(timestampRepository.getTimestampForKey(8L))
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.addNewTimestamp("gtfk", 2000L))
+        StepVerifier.create(timestampRepository.addNewTimestamp(8L, 2000L))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.getTimestampForKey("gtfk"))
+        StepVerifier.create(timestampRepository.getTimestampForKey(8L))
                 .expectNext(2000L)
                 .verifyComplete();
     }

@@ -5,11 +5,11 @@ import java.util.Map;
 
 public interface UpdatesRepository {
 
-    Boolean addNewUpdates(String id, Long timestamp, List<String> updates);
+    Boolean addNewUpdates(Long id, Long timestamp, List<String> updates);
 
-    Map<Long, List<String>> getById(String id);
+    Map<Long, List<String>> getById(Long id);
 
-    Boolean keyExists(String id, Long key);
+    Boolean keyExists(Long id, Long key);
 
-    Long deleteTimestamps(String id, List<Long> timestamps);
+    Long deleteTimestamps(Long id, List<Long> timestamps);
 }

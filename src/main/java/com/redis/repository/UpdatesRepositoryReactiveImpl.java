@@ -17,9 +17,9 @@ import reactor.core.publisher.Mono;
 public class UpdatesRepositoryReactiveImpl implements UpdatesRepositoryReactive {
 
     @Qualifier("reactiveRedisTemplateUpdatesMap")
-    private final ReactiveRedisTemplate<String, Map<Long, List<String>>> reactiveRedisTemplate;
+    private final ReactiveRedisTemplate<Long, Map<Long, List<String>>> reactiveRedisTemplate;
 
-    private ReactiveHashOperations<String, Long, List<String>> reactiveHashOperations;
+    private ReactiveHashOperations<Long, Long, List<String>> reactiveHashOperations;
 
     @PostConstruct
     private void initHashOperations() {
@@ -27,21 +27,21 @@ public class UpdatesRepositoryReactiveImpl implements UpdatesRepositoryReactive 
         reactiveHashOperations = reactiveRedisTemplate.opsForHash();
     }
 
-    public Mono<Boolean> addNewUpdates(String id, Long timestamp, List<String> updates) {
+    public Mono<Boolean> addNewUpdates(Long id, Long timestamp, List<String> updates) {
         return reactiveHashOperations
                 .put(id, timestamp, updates);
     }
 
-    public Mono<Map<Long, List<String>>> getById(String id) {
+    public Mono<Map<Long, List<String>>> getById(Long id) {
         return reactiveHashOperations.entries(id)
                 .collectMap(Map.Entry::getKey, Map.Entry::getValue);
     }
 
-    public Mono<Boolean> keyExists(String id, Long key) {
+    public Mono<Boolean> keyExists(Long id, Long key) {
         return reactiveHashOperations.hasKey(id, key);
     }
 
-    public Mono<Long> deleteTimestamps(String id, List<Long> timestamps) {
+    public Mono<Long> deleteTimestamps(Long id, List<Long> timestamps) {
         return reactiveHashOperations.remove(id, timestamps.toArray());
     }
 

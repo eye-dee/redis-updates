@@ -15,31 +15,30 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
     private final ObjectMapper objectMapper;
 
     @Override
-    public Boolean addNewUpdates(String id, Long timestamp, List<String> updates) {
-        String updatesJson = null;
+    public Boolean addNewUpdates(Long id, Long timestamp, List<String> updates) {
         try {
-            updatesJson = objectMapper.writeValueAsString(updates);
+            String updatesJson = objectMapper.writeValueAsString(updates);
             Map<String, String> updatesMap = Map.of(timestamp.toString(), updatesJson);
-            return jedis.hset(id, updatesMap) > 0;
+            return jedis.hset(id.toString(), updatesMap) > 0;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Map<Long, List<String>> getById(String id) {
-        Map<String, String> jsonMap = jedis.hgetAll(id);
+    public Map<Long, List<String>> getById(Long id) {
+        Map<String, String> jsonMap = jedis.hgetAll(id.toString());
 
         return null;
     }
 
     @Override
-    public Boolean keyExists(String id, Long key) {
+    public Boolean keyExists(Long id, Long key) {
         return null;
     }
 
     @Override
-    public Long deleteTimestamps(String id, List<Long> timestamps) {
+    public Long deleteTimestamps(Long id, List<Long> timestamps) {
         return null;
     }
 }

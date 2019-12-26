@@ -5,13 +5,13 @@ import java.util.Properties;
 
 public interface TimestampRepository {
 
-    Boolean addNewTimestamp(String key, Long value);
+    Boolean addNewTimestamp(Long key, Long value);
 
-    Boolean overrideOldValue(String key, Long value);
+    Boolean overrideOldValue(Long key, Long value);
 
-    Long getTimestampForKey(String key);
+    Long getTimestampForKey(Long key);
 
-    List<Long> getAll();
+    Long getOldest();
 
     Properties info();
 

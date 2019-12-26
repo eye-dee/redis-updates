@@ -19,7 +19,7 @@ public class UpdatesService {
 
     private final TimestampRepositoryReactiveImpl timestampRepository;
 
-    public Mono<Boolean> addNewUpdates(String id, Long timestamp, List<String> updates) {
+    public Mono<Boolean> addNewUpdates(Long id, Long timestamp, List<String> updates) {
         return Mono.zip(
                 updatesRepository.addNewUpdates(id, timestamp, updates),
                 timestampRepository.addNewTimestamp(id, timestamp)
@@ -27,7 +27,7 @@ public class UpdatesService {
                 .map(Tuple2::getT1);
     }
 
-    public Mono<Boolean> deleteOldUpdates(String id) {
+    public Mono<Boolean> deleteOldUpdates(Long id) {
         return updatesRepository.getById(id)
                 .flatMap(map -> {
                     Long max = map.keySet()
@@ -46,8 +46,7 @@ public class UpdatesService {
     }
 
     public Mono<Long> getOldest() {
-        return timestampRepository.getAll()
-                .map(list -> list.stream().max(Long::compareTo).orElseThrow());
+        return timestampRepository.getOldest();
     }
 
     public Mono<Properties> getDbState() {

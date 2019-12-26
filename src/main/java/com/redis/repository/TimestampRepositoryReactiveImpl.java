@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Properties;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.core.ReactiveValueOperations;
+import org.springframework.data.redis.core.ReactiveZSetOperations;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -13,31 +15,43 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TimestampRepositoryReactiveImpl implements TimestampRepositoryReactive {
 
+    private static final String KEY = "tsMap";
+
     private final ReactiveRedisTemplate<String, Long> reactiveRedisTemplate;
 
-    private ReactiveValueOperations<String, Long> reactiveValueOperations;
+    private ReactiveZSetOperations<String, Long> reactiveValueOperations;
 
     @PostConstruct
     private void initOperations() {
-        reactiveValueOperations = reactiveRedisTemplate.opsForValue();
+        reactiveValueOperations = reactiveRedisTemplate.opsForZSet();
     }
 
-    public Mono<Boolean> addNewTimestamp(String key, Long value) {
-        return reactiveValueOperations.setIfAbsent("id-" + key, value);
+    public Mono<Boolean> addNewTimestamp(Long key, Long value) {
+        return reactiveValueOperations.rank(KEY, value)
+                .map(it -> false)
+                .switchIfEmpty(reactiveValueOperations.add(KEY, value, key));
     }
 
-    public Mono<Boolean> overrideOldValue(String key, Long value) {
-        return reactiveValueOperations.setIfPresent("id-" + key, value);
+    public Mono<Boolean> overrideOldValue(Long key, Long value) {
+        return reactiveValueOperations.rank(KEY, value)
+                .flatMap(it -> reactiveValueOperations.add(KEY, value, key).map(updated -> !updated))
+                .switchIfEmpty(Mono.just(false));
     }
 
-    public Mono<Long> getTimestampForKey(String key) {
-        return reactiveValueOperations.get("id-" + key);
+    public Mono<Long> getTimestampForKey(Long key) {
+        return reactiveValueOperations.range(KEY,
+                Range.from(Range.Bound.inclusive(key))
+                        .to(Range.Bound.inclusive(key)))
+                .next();
     }
 
-    public Mono<List<Long>> getAll() {
-        return reactiveRedisTemplate.keys("id-*")
-                .collectList()
-                .flatMap(keys -> reactiveValueOperations.multiGet(keys));
+    public Mono<Long> getOldest() {
+        return reactiveValueOperations.rangeByScore(KEY,
+                Range.
+                        from(Range.Bound.exclusive((double) Long.MAX_VALUE))
+                        .to(Range.Bound.exclusive((double) Long.MIN_VALUE)),
+                RedisZSetCommands.Limit.limit().count(1))
+                .next();
     }
 
     public Mono<Properties> info() {

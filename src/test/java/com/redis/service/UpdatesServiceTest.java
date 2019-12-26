@@ -23,31 +23,18 @@ class UpdatesServiceTest extends AbstractSpringIntegrationTest {
     @Test
     void addNewUpdatesNotExist() {
         StepVerifier.create(updatesService.addNewUpdates(
-                "anune", 1001L, Collections.singletonList("update")))
+                9L, 1002L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.getById("anune"))
-                .expectNext(Map.of(1001L, Collections.singletonList("update")))
-                .verifyComplete();
-
-        StepVerifier.create(timestampRepository.getTimestampForKey("anune"))
-                .expectNext(1001L)
-                .verifyComplete();
-
-        StepVerifier.create(updatesService.addNewUpdates(
-                "anune", 1002L, Collections.singletonList("update")))
-                .expectNext(true)
-                .verifyComplete();
-
-        StepVerifier.create(updatesRepository.getById("anune"))
+        StepVerifier.create(updatesRepository.getById(9L))
                 .expectNext(Map.of(
                         1001L, Collections.singletonList("update"),
                         1002L, Collections.singletonList("update")
                 ))
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.getTimestampForKey("anune"))
+        StepVerifier.create(timestampRepository.getTimestampForKey(9L))
                 .expectNext(1001L)
                 .verifyComplete();
     }
@@ -55,29 +42,29 @@ class UpdatesServiceTest extends AbstractSpringIntegrationTest {
     @Test
     void deleteOldUpdates() {
         StepVerifier.create(updatesService.addNewUpdates(
-                "dou", 1001L, Collections.singletonList("update")))
+                10L, 1001L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
         StepVerifier.create(updatesService.addNewUpdates(
-                "dou", 1002L, Collections.singletonList("update")))
+                10L, 1002L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
         StepVerifier.create(updatesService.addNewUpdates(
-                "dou", 1003L, Collections.singletonList("update")))
+                10L, 1003L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesService.deleteOldUpdates("dou"))
+        StepVerifier.create(updatesService.deleteOldUpdates(10L))
                 .expectNext(true)
                 .verifyComplete();
 
-        StepVerifier.create(updatesRepository.getById("dou"))
+        StepVerifier.create(updatesRepository.getById(10L))
                 .expectNext(Map.of(1003L, Collections.singletonList("update")))
                 .verifyComplete();
 
-        StepVerifier.create(timestampRepository.getTimestampForKey("dou"))
+        StepVerifier.create(timestampRepository.getTimestampForKey(10L))
                 .expectNext(1003L)
                 .verifyComplete();
     }
@@ -85,17 +72,17 @@ class UpdatesServiceTest extends AbstractSpringIntegrationTest {
     @Test
     public void getOldest() {
         StepVerifier.create(updatesService.addNewUpdates(
-                "go1", 10001L, Collections.singletonList("update")))
+                11L, 10001L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
         StepVerifier.create(updatesService.addNewUpdates(
-                "go2", 10002L, Collections.singletonList("update")))
+                13L, 10002L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 
         StepVerifier.create(updatesService.addNewUpdates(
-                "go3", 10003L, Collections.singletonList("update")))
+                14L, 10003L, Collections.singletonList("update")))
                 .expectNext(true)
                 .verifyComplete();
 

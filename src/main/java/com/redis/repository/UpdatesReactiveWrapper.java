@@ -11,22 +11,22 @@ public class UpdatesReactiveWrapper implements UpdatesRepositoryReactive {
     private final UpdatesRepository updatesRepository;
 
     @Override
-    public Mono<Boolean> addNewUpdates(String id, Long timestamp, List<String> updates) {
+    public Mono<Boolean> addNewUpdates(Long id, Long timestamp, List<String> updates) {
         return Mono.just(updatesRepository.addNewUpdates(id, timestamp, updates));
     }
 
     @Override
-    public Mono<Map<Long, List<String>>> getById(String id) {
+    public Mono<Map<Long, List<String>>> getById(Long id) {
         return Mono.just(updatesRepository.getById(id));
     }
 
     @Override
-    public Mono<Boolean> keyExists(String id, Long key) {
+    public Mono<Boolean> keyExists(Long id, Long key) {
         return Mono.just(updatesRepository.keyExists(id, key));
     }
 
     @Override
-    public Mono<Long> deleteTimestamps(String id, List<Long> timestamps) {
+    public Mono<Long> deleteTimestamps(Long id, List<Long> timestamps) {
         return Mono.just(updatesRepository.deleteTimestamps(id, timestamps));
     }
 }
