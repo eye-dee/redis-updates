@@ -6,24 +6,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.Pair;
-import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
-@RequiredArgsConstructor
-@Service
 public class UpdatesRepositoryJedis implements UpdatesRepository {
 
     private final Jedis jedis;
-
     private final ObjectMapper objectMapper;
+    private final JavaType listStrings;
 
-    private JavaType listStrings;
-
-    @PostConstruct
-    private void initType() {
+    public UpdatesRepositoryJedis(Jedis jedis, ObjectMapper objectMapper) {
+        this.jedis = jedis;
+        this.objectMapper = objectMapper;
         listStrings = objectMapper.getTypeFactory().constructCollectionType(List.class, String.class);
     }
 
@@ -45,12 +38,12 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
         return jsonMap.entrySet()
                 .stream()
                 .map(this::instanceList)
-                .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Pair<Long, List<String>> instanceList(Map.Entry<String, String> entry) {
+    private Map.Entry<Long, List<String>> instanceList(Map.Entry<String, String> entry) {
         try {
-            return Pair.of(Long.parseLong(entry.getKey()), objectMapper.readValue(entry.getValue(), listStrings));
+            return Map.entry(Long.parseLong(entry.getKey()), objectMapper.readValue(entry.getValue(), listStrings));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

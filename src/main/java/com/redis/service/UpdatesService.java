@@ -1,23 +1,20 @@
 package com.redis.service;
 
-import com.redis.repository.TimestampRepositoryReactiveImpl;
-import com.redis.repository.UpdatesRepositoryReactiveImpl;
+import com.redis.repository.TimestampRepositoryReactive;
+import com.redis.repository.UpdatesRepositoryReactive;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-@Service
 @RequiredArgsConstructor
 public class UpdatesService {
 
-    private final UpdatesRepositoryReactiveImpl updatesRepository;
+    private final UpdatesRepositoryReactive updatesRepository;
 
-    private final TimestampRepositoryReactiveImpl timestampRepository;
+    private final TimestampRepositoryReactive timestampRepository;
 
     public Mono<Boolean> addNewUpdates(String id, Long timestamp, List<String> updates) {
         return Mono.zip(
