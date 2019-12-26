@@ -1,20 +1,20 @@
 package com.redis.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.AbstractSpringIntegrationTest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
+import redis.clients.jedis.Jedis;
 
 class UpdatesRepositoryTest extends AbstractSpringIntegrationTest {
 
-    @Autowired
-    private UpdatesRepositoryJedis updatesRepositoryJedis;
+    private UpdatesRepositoryJedis updatesRepositoryJedis = new UpdatesRepositoryJedis(
+            new Jedis("localhost", 6379), new ObjectMapper());
 
     private UpdatesRepositoryReactive updatesRepository;
 

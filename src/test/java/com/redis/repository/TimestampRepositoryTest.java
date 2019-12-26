@@ -4,13 +4,13 @@ import com.redis.AbstractSpringIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
+import redis.clients.jedis.Jedis;
 
 class TimestampRepositoryTest extends AbstractSpringIntegrationTest {
 
-    @Autowired
-    private TimestampRepositoryJedis timestampRepositoryJedis;
+    private TimestampRepositoryJedis timestampRepositoryJedis
+            = new TimestampRepositoryJedis(new Jedis("localhost", 6379));
 
     private TimestampRepositoryReactive timestampRepository;
 

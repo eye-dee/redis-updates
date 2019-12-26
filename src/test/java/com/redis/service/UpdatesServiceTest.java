@@ -1,24 +1,32 @@
 package com.redis.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.AbstractSpringIntegrationTest;
-import com.redis.repository.TimestampRepositoryReactiveImpl;
-import com.redis.repository.UpdatesRepositoryReactiveImpl;
+import com.redis.repository.TimestampReactiveWrapper;
+import com.redis.repository.TimestampRepositoryJedis;
+import com.redis.repository.TimestampRepositoryReactive;
+import com.redis.repository.UpdatesReactiveWrapper;
+import com.redis.repository.UpdatesRepositoryJedis;
+import com.redis.repository.UpdatesRepositoryReactive;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
+import redis.clients.jedis.Jedis;
 
 class UpdatesServiceTest extends AbstractSpringIntegrationTest {
 
-    @Autowired
-    private UpdatesService updatesService;
+    private UpdatesRepositoryReactive updatesRepository = new UpdatesReactiveWrapper(
+            new UpdatesRepositoryJedis(new Jedis("localhost", 6379), new ObjectMapper())
+    );
 
-    @Autowired
-    private UpdatesRepositoryReactiveImpl updatesRepository;
+    private TimestampRepositoryReactive timestampRepository = new TimestampReactiveWrapper(
+            new TimestampRepositoryJedis(new Jedis("localhost", 6379))
+    );
 
-    @Autowired
-    private TimestampRepositoryReactiveImpl timestampRepository;
+    private UpdatesService updatesService = new UpdatesService(
+            updatesRepository, timestampRepository
+    );
 
     @Test
     void addNewUpdatesNotExist() {
