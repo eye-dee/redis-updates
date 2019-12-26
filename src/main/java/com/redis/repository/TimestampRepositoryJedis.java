@@ -1,45 +1,32 @@
 package com.redis.repository;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
 
 @RequiredArgsConstructor
 public class TimestampRepositoryJedis implements TimestampRepository {
+
+    private static final String KEY = "timestamps";
 
     private final Jedis jedis;
 
     @Override
     public Boolean addNewTimestamp(String key, Long value) {
-        return "OK".equals(jedis.set("id-" + key, value.toString(),
-                SetParams.setParams().nx()
-        ));
+        return jedis.zadd(KEY, value, key, ZAddParams.zAddParams().nx()) == 1;
     }
 
     @Override
     public Boolean overrideOldValue(String key, Long value) {
-        String set = jedis.set("id-" + key, value.toString(),
-                SetParams.setParams().xx()
-        );
-        System.out.println("overrideOldValue = " + set);
-        return "OK".equals(set);
+        return jedis.zadd(KEY, value, key, ZAddParams.zAddParams().xx().ch()) == 1;
     }
 
     @Override
-    public Optional<Long> getTimestampForKey(String key) {
-        return Optional.ofNullable(jedis.get("id-" + key))
-                .map(Long::parseLong);
-    }
-
-    @Override
-    public List<Long> getAll() {
-        return jedis.mget(jedis.keys("id-*").toArray(new String[0]))
+    public Optional<String> getOldest() {
+        return jedis.zrangeByScore(KEY, Long.MIN_VALUE, Long.MAX_VALUE, 0, 1)
                 .stream()
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
+                .findAny();
     }
 
     @Override

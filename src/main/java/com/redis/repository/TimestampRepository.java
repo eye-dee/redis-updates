@@ -1,6 +1,5 @@
 package com.redis.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface TimestampRepository {
@@ -9,9 +8,7 @@ public interface TimestampRepository {
 
     Boolean overrideOldValue(String key, Long value);
 
-    Optional<Long> getTimestampForKey(String key);
-
-    List<Long> getAll();
+    Optional<String> getOldest();
 
     String info();
 

@@ -52,8 +52,6 @@ public class IntegrationTest {
         Assertions.assertEquals(updatesRepositoryJedis.getById("anune"),
                 Map.of(1001L, Collections.singletonList("update")));
 
-        Assertions.assertEquals(timestampRepositoryJedis.getTimestampForKey("anune").get(), 1001L);
-
         Assertions.assertTrue(updatesService.addNewUpdates(
                 "anune", 1002L, Collections.singletonList("update")));
 
@@ -62,8 +60,6 @@ public class IntegrationTest {
                         1001L, Collections.singletonList("update"),
                         1002L, Collections.singletonList("update")
                 ));
-
-        Assertions.assertEquals(timestampRepositoryJedis.getTimestampForKey("anune").get(), 1001L);
     }
 
     @Test
@@ -82,14 +78,12 @@ public class IntegrationTest {
         Assertions.assertEquals(updatesRepositoryJedis.getById("dou"),
                 Map.of(1003L, Collections.singletonList("update")));
 
-        Assertions.assertEquals(
-                timestampRepositoryJedis.getTimestampForKey("dou").get(), 1003L);
     }
 
     @Test
     public void getOldest() {
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "go1", 10001L, Collections.singletonList("update")));
+                "go1", 11L, Collections.singletonList("update")));
 
         Assertions.assertTrue(updatesService.addNewUpdates(
                 "go2", 10002L, Collections.singletonList("update")));
@@ -97,37 +91,23 @@ public class IntegrationTest {
         Assertions.assertTrue(updatesService.addNewUpdates(
                 "go3", 10003L, Collections.singletonList("update")));
 
-        Assertions.assertEquals(updatesService.getOldest(), 10003L);
+        Assertions.assertEquals(updatesService.getOldest().get(), "go1");
     }
 
     @Test
     public void addNewTimestamp() {
-        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("ant", 1000L)
-                , true);
+        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("ant", 1000L), true);
 
-        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("ant", 2000L)
-                , false);
+        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("ant", 2000L), false);
     }
 
     @Test
     public void overrideOldValue() {
-        Assertions.assertEquals(timestampRepositoryJedis.overrideOldValue("oov", 1000L)
-                , false);
+        Assertions.assertEquals(timestampRepositoryJedis.overrideOldValue("oov", 1000L), false);
 
-        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("oov", 2000L)
-                , true);
+        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("oov", 2000L), true);
 
-        Assertions.assertEquals(timestampRepositoryJedis.overrideOldValue("oov", 1000L)
-                , true);
-    }
-
-    @Test
-    public void getTimestampForKey() {
-        Assertions.assertFalse(timestampRepositoryJedis.getTimestampForKey("gtfk").isPresent());
-
-        Assertions.assertEquals(timestampRepositoryJedis.addNewTimestamp("gtfk", 2000L), true);
-
-        Assertions.assertEquals(timestampRepositoryJedis.getTimestampForKey("gtfk").get(), 2000L);
+        Assertions.assertEquals(timestampRepositoryJedis.overrideOldValue("oov", 1000L), true);
     }
 
     @Test
@@ -137,24 +117,19 @@ public class IntegrationTest {
 
     @Test
     public void addNewUpdates() {
-        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates("anu", 1000L, Arrays.asList("update1", "update1"))
-                , true)
-        ;
+        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
+                "anu", 1000L, Arrays.asList("update1", "update1")), true);
 
-        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates("anu", 1001L, Arrays.asList("update1", "update1"))
-                , true)
-        ;
+        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
+                "anu", 1001L, Arrays.asList("update1", "update1")), true);
     }
 
     @Test
     public void checkKeyExistsTrue() {
-        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates("cket", 1001L, Arrays.asList("update1", "update1"
-                ))
-                , true)
-        ;
+        Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
+                "cket", 1001L, Arrays.asList("update1", "update1")), true);
 
-        Assertions.assertEquals(updatesRepositoryJedis.keyExists("cket", 1001L), true)
-        ;
+        Assertions.assertEquals(updatesRepositoryJedis.keyExists("cket", 1001L), true);
     }
 
     @Test

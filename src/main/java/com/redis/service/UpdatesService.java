@@ -5,6 +5,7 @@ import com.redis.repository.UpdatesRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
@@ -36,9 +37,8 @@ public class UpdatesService {
         return firstResult && secondResult;
     }
 
-    public Long getOldest() {
-        List<Long> list = timestampRepository.getAll();
-        return list.stream().max(Long::compareTo).orElseThrow();
+    public Optional<String> getOldest() {
+        return timestampRepository.getOldest();
     }
 
     public String getDbState() {
