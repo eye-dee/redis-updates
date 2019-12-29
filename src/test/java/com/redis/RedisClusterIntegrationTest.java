@@ -1,33 +1,24 @@
 package com.redis;
 
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisClusterIntegrationTest {
 
     public static JedisCluster jedis;
 
     private static Random random = new Random();
+    private static ConnectionFactory connectionFactory = new ConnectionFactory();
 
     @BeforeAll
     static void setUp() {
-        Set<HostAndPort> jedisClusterNode = new HashSet<>();
-        jedisClusterNode.add(new HostAndPort("localhost", 7000));
-        JedisPoolConfig cfg = new JedisPoolConfig();
-        cfg.setMaxTotal(16);
-        cfg.setMaxIdle(8);
-        cfg.setMaxWaitMillis(10000);
-        cfg.setTestOnBorrow(true);
-        jedis = new JedisCluster(jedisClusterNode, 10000, 1, cfg);
+        jedis = connectionFactory.getJedis();
     }
 
     @Test
