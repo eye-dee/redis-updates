@@ -1,7 +1,9 @@
 package com.redis.service;
 
+import com.redis.model.MyMsg;
 import com.redis.repository.TimestampRepository;
 import com.redis.repository.UpdatesRepository;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 public class UpdatesService {
 
     private final UpdatesRepository updatesRepository;
+
     private final TimestampRepository timestampRepository;
 
     public UpdatesService(UpdatesRepository updatesRepository, TimestampRepository timestampRepository) {
@@ -18,14 +21,22 @@ public class UpdatesService {
         this.timestampRepository = timestampRepository;
     }
 
-    public boolean addNewUpdates(String id, Long timestamp, List<String> updates) {
-        boolean result = updatesRepository.addNewUpdates(id, timestamp, updates);
-        timestampRepository.addNewTimestamp(id, timestamp);
-        return result;
+    public boolean addNewUpdates(String groupId, Long timestamp, List<MyMsg> updates) {
+        return updatesRepository.addNewUpdates(groupId, timestamp, updates)
+                && timestampRepository.addOrOverride(groupId, timestamp);
     }
 
-    public Boolean deleteOldUpdates(String id) {
-        Map<Long, List<String>> byId = updatesRepository.getById(id);
+    public boolean deleteForGroup(String groupId) {
+        return updatesRepository.deleteForGroup(groupId) && timestampRepository.deleteForGroup(groupId);
+    }
+
+    public boolean deleteTimestampFromGroup(String groupId, Long timestamp) {
+        timestampRepository.deleteTimestamp(timestamp);
+        return updatesRepository.deleteTimestamps(groupId, Collections.singletonList(timestamp)) == 1;
+    }
+
+    public Boolean deleteOldUpdates(String groupId) {
+        Map<Long, List<MyMsg>> byId = updatesRepository.getById(groupId);
         Long max = byId.keySet()
                 .stream()
                 .max(Comparator.comparingLong(l -> l))
@@ -34,16 +45,14 @@ public class UpdatesService {
                 .stream()
                 .filter(timestamp -> timestamp < max)
                 .collect(Collectors.toList());
-        boolean firstResult = timestampRepository.overrideOldValue(id, max);
-        boolean secondResult = updatesRepository.deleteTimestamps(id, timestamps) == timestamps.size();
-        return firstResult && secondResult;
+        return updatesRepository.deleteTimestamps(groupId, timestamps) == timestamps.size();
     }
 
     public Optional<String> getOldest() {
         return timestampRepository.getOldest();
     }
 
-    public String getDbState() {
+    public double getDbAveragePercent() {
         return timestampRepository.info();
     }
 

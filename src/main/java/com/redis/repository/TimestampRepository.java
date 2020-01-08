@@ -4,12 +4,17 @@ import java.util.Optional;
 
 public interface TimestampRepository {
 
-    Boolean addNewTimestamp(String key, Long value);
+    boolean addNewTimestamp(String key, Long value);
 
-    Boolean overrideOldValue(String key, Long value);
+    boolean overrideOldValue(String key, Long value);
+
+    boolean addOrOverride(String key, Long value);
 
     Optional<String> getOldest();
 
-    String info();
+    double info();
 
+    boolean deleteForGroup(String groupId);
+
+    boolean deleteTimestamp(Long timestamp);
 }

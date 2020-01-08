@@ -1,37 +1,38 @@
 package com.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redis.model.MyMsg;
 import com.redis.repository.TimestampRepositoryJedis;
 import com.redis.repository.UpdatesRepositoryJedis;
 import com.redis.service.UpdatesService;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.AfterAll;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
-import redis.embedded.RedisServer;
+import redis.clients.jedis.JedisCluster;
 
 public class IntegrationTest {
 
-    public static RedisServer redisServer;
+    public static JedisCluster jedis;
 
-    public static Jedis jedis = new Jedis("localhost", 6379);
+    private static ConnectionFactory connectionFactory = new ConnectionFactory();
 
     @BeforeAll
-    public static void initRedis() throws IOException {
-        redisServer = new RedisServer(6379);
-        redisServer.start();
-    }
+    public static void initRedis() {
+        jedis = connectionFactory.getJedis();
 
-    @AfterAll
-    public static void stopRedis() {
-        redisServer.stop();
+        jedis.getClusterNodes()
+                .forEach((name, cluster) -> {
+                    Jedis resource = cluster.getResource();
+                    Set<String> keys = resource.keys("*");
+                    keys.forEach(key -> jedis.del(key));
+                });
     }
 
     private TimestampRepositoryJedis timestampRepositoryJedis
@@ -45,53 +46,73 @@ public class IntegrationTest {
     );
 
     @Test
+    public void deleteForGroupId() {
+        Assertions.assertTrue(
+                updatesService.addNewUpdates("dfgi", 1001L, createUpdate()));
+
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dfgi").size(), 1);
+        Assertions.assertTrue(updatesService.deleteForGroup("dfgi"));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dfgi").size(), 0);
+    }
+
+    @Test
+    public void deleteFromGroupIdForTimestamp() {
+        Assertions.assertTrue(
+                updatesService.addNewUpdates("dfgiat", 1001L, createUpdate()));
+        Assertions.assertTrue(
+                updatesService.addNewUpdates("dfgiat", 1002L, createUpdate()));
+
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dfgiat").size(), 2);
+        Assertions.assertTrue(updatesService.deleteTimestampFromGroup("dfgiat", 1001L));
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dfgiat").size(), 1);
+    }
+
+    @Test
     void addNewUpdatesNotExist() {
         Assertions.assertTrue(
-                updatesService.addNewUpdates("anune", 1001L, Collections.singletonList("update")));
+                updatesService.addNewUpdates("anune", 1001L, createUpdate()));
 
-
-        Map<Long, List<String>> expected1 = new HashMap<>();
-        expected1.put(1001L, Collections.singletonList("update"));
-        Assertions.assertEquals(updatesRepositoryJedis.getById("anune"),expected1);
+        Map<Long, List<MyMsg>> expected1 = new HashMap<>();
+        expected1.put(1001L, createUpdate());
+        Assertions.assertEquals(updatesRepositoryJedis.getById("anune").size(), 1);
+        Assertions.assertIterableEquals(updatesRepositoryJedis.getById("anune").get(1001L), createUpdate());
 
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "anune", 1002L, Collections.singletonList("update")));
+                "anune", 1002L, createUpdate()));
 
-        Map<Long, List<String>> expected2 = new HashMap<>();
-        expected2.put(1001L, Collections.singletonList("update"));
-        expected2.put(1002L, Collections.singletonList("update"));
+        Map<Long, List<MyMsg>> expected2 = new HashMap<>();
+        expected2.put(1001L, createUpdate());
+        expected2.put(1002L, createUpdate());
         Assertions.assertEquals(updatesRepositoryJedis.getById("anune"), expected2);
     }
 
     @Test
     void deleteOldUpdates() {
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "dou", 1001L, Collections.singletonList("update")));
+                "dou", 1001L, createUpdate()));
 
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "dou", 1002L, Collections.singletonList("update")));
+                "dou", 1002L, createUpdate()));
 
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "dou", 1003L, Collections.singletonList("update")));
+                "dou", 1003L, createUpdate()));
 
         Assertions.assertEquals(updatesService.deleteOldUpdates("dou"), true);
 
-        Map<Long, List<String>> expected = new HashMap<>();
-        expected.put(1003L, Collections.singletonList("update"));
-        Assertions.assertEquals(updatesRepositoryJedis.getById("dou"), expected);
-
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dou").size(), 1);
+        Assertions.assertIterableEquals(updatesRepositoryJedis.getById("dou").get(1003L), createUpdate());
     }
 
     @Test
     public void getOldest() {
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "go1", 11L, Collections.singletonList("update")));
+                "go1", 11L, createUpdate()));
 
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "go2", 10002L, Collections.singletonList("update")));
+                "go2", 10002L, createUpdate()));
 
         Assertions.assertTrue(updatesService.addNewUpdates(
-                "go3", 10003L, Collections.singletonList("update")));
+                "go3", 10003L, createUpdate()));
 
         Assertions.assertEquals(updatesService.getOldest().get(), "go1");
     }
@@ -114,22 +135,22 @@ public class IntegrationTest {
 
     @Test
     public void info() {
-        Assertions.assertNotNull(timestampRepositoryJedis.info());
+        Assertions.assertTrue(timestampRepositoryJedis.info() > 0);
     }
 
     @Test
     public void addNewUpdates() {
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "anu", 1000L, Arrays.asList("update1", "update1")), true);
+                "anu", 1000L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "anu", 1001L, Arrays.asList("update1", "update1")), true);
+                "anu", 1001L, createUpdates()), true);
     }
 
     @Test
     public void checkKeyExistsTrue() {
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "cket", 1001L, Arrays.asList("update1", "update1")), true);
+                "cket", 1001L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.keyExists("cket", 1001L), true);
     }
@@ -137,7 +158,7 @@ public class IntegrationTest {
     @Test
     public void checkKeyExistsFalse() {
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "ckef", 1001L, Arrays.asList("update1", "update1")), true);
+                "ckef", 1001L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.keyExists("ckef", 1000L), false);
     }
@@ -145,34 +166,43 @@ public class IntegrationTest {
     @Test
     void getById() {
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "gbi", 1000L, Arrays.asList("update1", "update1")), true);
+                "gbi", 1000L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "gbi", 1001L, Arrays.asList("update1", "update1")), true);
+                "gbi", 1001L, createUpdates()), true);
 
-        Map<Long, List<String>> actual = new HashMap<>();
-        actual.put(1000L, Arrays.asList("update1", "update1"));
-        actual.put(1001L, Arrays.asList("update1", "update1"));
+        Map<Long, List<MyMsg>> actual = new HashMap<>();
+        actual.put(1000L, createUpdates());
+        actual.put(1001L, createUpdates());
 
-        Assertions.assertEquals(updatesRepositoryJedis.getById("gbi"), actual);
+        Assertions.assertEquals(updatesRepositoryJedis.getById("gbi").size(), 2);
+        Assertions.assertEquals(updatesRepositoryJedis.getById("gbi").get(1000L), createUpdates());
+        Assertions.assertEquals(updatesRepositoryJedis.getById("gbi").get(1001L), createUpdates());
     }
 
     @Test
     public void deleteTimestamps() {
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "dt", 1000L, Arrays.asList("update1", "update1")), true);
+                "dt", 1000L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "dt", 1001L, Arrays.asList("update1", "update1")), true);
+                "dt", 1001L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.addNewUpdates(
-                "dt", 1002L, Arrays.asList("update1", "update1")), true);
+                "dt", 1002L, createUpdates()), true);
 
         Assertions.assertEquals(updatesRepositoryJedis.deleteTimestamps(
                 "dt", Arrays.asList(1000L, 1001L)), 2L);
 
-        Map<Long, List<String>> expected = new HashMap<>();
-        expected.put(1002L, Arrays.asList("update1", "update1"));
-        Assertions.assertEquals(updatesRepositoryJedis.getById("dt"), expected);
+        Assertions.assertEquals(updatesRepositoryJedis.getById("dt").size(), 1);
+        Assertions.assertIterableEquals(updatesRepositoryJedis.getById("dt").get(1002L), createUpdates());
+    }
+
+    private List<MyMsg> createUpdates() {
+        return Arrays.asList(new MyMsg("field", "update1"), new MyMsg("field", "update2"));
+    }
+
+    private List<MyMsg> createUpdate() {
+        return Collections.singletonList(new MyMsg("field", "update"));
     }
 }
