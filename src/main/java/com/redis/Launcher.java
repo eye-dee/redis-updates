@@ -1,5 +1,6 @@
 package com.redis;
 
+import com.redis.lock.JedisLock;
 import com.redis.repository.ConnectionFactory;
 import com.redis.repository.jedis.GroupIdRepositoryJedis;
 import com.redis.repository.jedis.InProgressRepositoryJedis;
@@ -27,9 +28,10 @@ public class Launcher {
     public static void main(String[] args) {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         JedisCluster jedis = connectionFactory.getJedis();
+        JedisLock jedisLock = new JedisLock(jedis, "lock", 10000, 30000);
         UpdateService updateService = new UpdateService(new GroupIdRepositoryJedis(jedis),
                 new InProgressRepositoryJedis(jedis),
-                new UpdatesRepositoryJedis(jedis));
+                new UpdatesRepositoryJedis(jedis), jedisLock);
         InfoRepositoryJedis infoRepositoryJedis = new InfoRepositoryJedis(jedis);
 
         jedis.getClusterNodes()
@@ -44,7 +46,12 @@ public class Launcher {
                 String group = takeRandomFromList(ALL_GROUPS);
                 String id = takeRandomFromList(ALL_IDS);
 
-                boolean handled = updateService.handleNewUpdates(group, id, generateMessages());
+                boolean handled = false;
+                try {
+                    handled = updateService.handleNewUpdates(group, id, generateMessages());
+                } catch (InterruptedException e) {
+                    System.out.println(e);
+                }
 
                 if (!handled) {
                     System.out.println("group " + group + " with id " + id + " " + " was not added");
@@ -62,7 +69,12 @@ public class Launcher {
                 String group = takeRandomFromList(ALL_GROUPS);
                 String id = takeRandomFromList(ALL_IDS);
 
-                boolean handled = updateService.handleUpdatesForGroup(group, 5 + random.nextInt(10));
+                boolean handled = false;
+                try {
+                    handled = updateService.handleUpdatesForGroup(group, 5 + random.nextInt(10));
+                } catch (InterruptedException e) {
+                    System.out.println(e);
+                }
                 if (!handled) {
                     System.out.println("group " + group + " with id " + id + " " + " was not handled");
                 }
