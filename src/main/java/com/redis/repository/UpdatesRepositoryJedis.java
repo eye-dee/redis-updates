@@ -3,47 +3,41 @@ package com.redis.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redis.model.MyMsg;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Jedis;
 
 public class UpdatesRepositoryJedis implements UpdatesRepository {
 
-    private final JedisCluster jedis;
+    private final Jedis jedis;
 
     private final ObjectMapper objectMapper;
 
-    private final JavaType listOfMessages;
+    private final JavaType listStrings;
 
-    public UpdatesRepositoryJedis(JedisCluster jedis, ObjectMapper objectMapper) {
+    public UpdatesRepositoryJedis(Jedis jedis, ObjectMapper objectMapper) {
         this.jedis = jedis;
         this.objectMapper = objectMapper;
-        listOfMessages = objectMapper.getTypeFactory().constructCollectionType(List.class, MyMsg.class);
+        listStrings = objectMapper.getTypeFactory().constructCollectionType(List.class, String.class);
     }
 
     @Override
-    public Boolean addNewUpdates(String groupId, Long timestamp, List<MyMsg> updates) {
+    public Boolean addNewUpdates(String id, Long timestamp, List<String> updates) {
         try {
             String updatesJson = objectMapper.writeValueAsString(updates);
             Map<String, String> updatesMap = new HashMap<>();
             updatesMap.put(timestamp.toString(), updatesJson);
-            return jedis.hset(groupId, updatesMap) > 0;
+            return jedis.hset(id, updatesMap) > 0;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Boolean deleteForGroup(String groupId) {
-        return jedis.del(groupId) == 1;
-    }
-
-    @Override
-    public Map<Long, List<MyMsg>> getById(String id) {
+    public Map<Long, List<String>> getById(String id) {
         Map<String, String> jsonMap = jedis.hgetAll(id);
 
         return jsonMap.entrySet()
@@ -52,10 +46,10 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map.Entry<Long, List<MyMsg>> instanceList(Map.Entry<String, String> entry) {
+    private Map.Entry<Long, List<String>> instanceList(Map.Entry<String, String> entry) {
         try {
             return new AbstractMap.SimpleEntry<>(Long.parseLong(entry.getKey()),
-                    objectMapper.readValue(entry.getValue(), listOfMessages));
+                    objectMapper.readValue(entry.getValue(), listStrings));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
