@@ -1,4 +1,4 @@
-package com.redis;
+package com.redis.repository;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,5 +23,6 @@ public class ConnectionFactory {
 
     public JedisCluster getJedis() {
         return jedis;
+
     }
 }

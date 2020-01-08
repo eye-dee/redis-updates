@@ -1,15 +1,13 @@
 package com.redis.repository;
 
+import com.redis.repository.model.Message;
 import java.util.List;
-import java.util.Map;
 
 public interface UpdatesRepository {
 
-    Boolean addNewUpdates(String id, Long timestamp, List<String> updates);
+    long addUpdatesForGroupId(String groupId, String id, List<Message> updates);
 
-    Map<Long, List<String>> getById(String id);
+    List<Message> takeMessagesFromGroup(String groupId, String id, int number);
 
-    Boolean keyExists(String id, Long key);
-
-    Long deleteTimestamps(String id, List<Long> timestamps);
+    long removeMessagesForGroup(String groupId, String id, long numberOfMessages);
 }
