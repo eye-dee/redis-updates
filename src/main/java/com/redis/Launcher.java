@@ -1,6 +1,5 @@
 package com.redis;
 
-import com.redis.lock.JedisLock;
 import com.redis.repository.ConnectionFactory;
 import com.redis.repository.jedis.GroupIdRepositoryJedis;
 import com.redis.repository.jedis.InProgressRepositoryJedis;
@@ -25,13 +24,12 @@ public class Launcher {
 
     private static final List<String> ALL_IDS = Arrays.asList("id 1", "id 2", "id 3", "id 4", "id 5");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         JedisCluster jedis = connectionFactory.getJedis();
-        JedisLock jedisLock = new JedisLock(jedis, "lock", 10000, 30000);
         UpdateService updateService = new UpdateService(new GroupIdRepositoryJedis(jedis),
                 new InProgressRepositoryJedis(jedis),
-                new UpdatesRepositoryJedis(jedis), jedisLock);
+                new UpdatesRepositoryJedis(jedis));
         InfoRepositoryJedis infoRepositoryJedis = new InfoRepositoryJedis(jedis);
 
         jedis.getClusterNodes()
