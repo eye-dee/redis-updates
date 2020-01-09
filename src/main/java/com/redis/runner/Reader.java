@@ -16,15 +16,18 @@ public class Reader implements Runnable {
     @Override
     public void run() {
         String group = Launcher.takeRandomFromList(Launcher.ALL_GROUPS);
-        String id = Launcher.takeRandomFromList(Launcher.ALL_IDS);
 
-        List<Message> updates = updateService.readAllUpdates(group, id);
-        updates.forEach(System.out::println);
-        boolean handled = updateService.deleteOldUpdates(group, id, updates.size());
+        updateService.takeOldestId(group)
+                .ifPresent(id -> {
+                    List<Message> updates = updateService.readAllUpdates(group, id);
+                    updates.forEach(System.out::println);
+                    boolean handled = updateService.deleteOldUpdates(group, id, updates.size());
 
-        if (!handled) {
-            System.out.println("group " + group + " with id " + id + " size = " + updates.size());
-            System.out.println("group " + group + " with id " + id + " " + " was not handled");
-        }
+                    if (!handled) {
+                        System.out.println("group " + group + " with id " + id + " size = " + updates.size());
+                        System.out.println("group " + group + " with id " + id + " " + " was not handled");
+                    }
+                });
+
     }
 }

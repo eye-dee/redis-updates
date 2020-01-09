@@ -6,6 +6,7 @@ import com.redis.repository.UpdatesRepository;
 import com.redis.repository.model.Message;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class UpdateService {
 
@@ -48,5 +49,9 @@ public class UpdateService {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public Optional<String> takeOldestId(String groupId) {
+        return groupIdRepository.takeFromHead(groupId);
     }
 }
