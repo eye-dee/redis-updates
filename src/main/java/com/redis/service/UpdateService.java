@@ -32,21 +32,6 @@ public class UpdateService {
 
     }
 
-    public boolean handleUpdatesForGroup(String groupId, int number) {
-        return groupIdRepository.takeFromTheEnd(groupId)
-                .filter(id -> inProgressRepository.takeToProgress(groupId, id))
-                .filter(id -> {
-                    List<Message> messages = updatesRepository.takeMessagesFromGroup(groupId, id, number);
-
-                    messages.forEach(System.out::println);
-
-                    return updatesRepository.removeMessagesForGroup(groupId, id, number) == messages.size();
-                })
-                .filter(id -> inProgressRepository.releaseFromProgress(groupId, id))
-                .isPresent();
-
-    }
-
     public boolean deleteOldUpdates(String groupId, String id, long number) {
         if (number == 0) {
             inProgressRepository.releaseFromProgress(groupId, id);

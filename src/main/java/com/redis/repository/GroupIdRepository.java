@@ -6,5 +6,5 @@ public interface GroupIdRepository {
 
     boolean addToTheEndForGroup(String groupId, String id);
 
-    Optional<String> takeFromTheEnd(String groupId);
+    Optional<String> takeFromHead(String groupId);
 }

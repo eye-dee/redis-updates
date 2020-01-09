@@ -18,7 +18,7 @@ public class GroupIdRepositoryJedis implements GroupIdRepository {
     }
 
     @Override
-    public Optional<String> takeFromTheEnd(String groupId) {
+    public Optional<String> takeFromHead(String groupId) {
         return Optional.ofNullable(jedisCluster.lpop(groupId));
     }
 }
