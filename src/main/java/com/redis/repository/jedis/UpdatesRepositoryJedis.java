@@ -29,8 +29,17 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
     }
 
     @Override
+    public List<Message> takeAllMessagesFromGroup(String groupId, String id) {
+        long len = jedisCluster.llen(generateUniqueId(groupId, id));
+        return jedisCluster.lrange(generateUniqueId(groupId, id), 0, len)
+                .stream()
+                .map(this::readExceptionally)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Message> takeMessagesFromGroup(String groupId, String id, int number) {
-        return jedisCluster.lrange(generateUniqueId(groupId, id), 0, number - 1)
+        return jedisCluster.lrange(generateUniqueId(groupId, id), 0, number)
                 .stream()
                 .map(this::readExceptionally)
                 .collect(Collectors.toList());

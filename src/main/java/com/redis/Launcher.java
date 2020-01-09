@@ -1,6 +1,7 @@
 package com.redis;
 
 import com.redis.repository.ConnectionFactory;
+import com.redis.repository.JedisSingleton;
 import com.redis.repository.jedis.GroupIdRepositoryJedis;
 import com.redis.repository.jedis.InProgressRepositoryJedis;
 import com.redis.repository.jedis.InfoRepositoryJedis;
@@ -26,7 +27,7 @@ public class Launcher {
 
     public static void main(String[] args) throws InterruptedException {
         ConnectionFactory connectionFactory = new ConnectionFactory();
-        JedisCluster jedis = connectionFactory.getJedis();
+        JedisCluster jedis = JedisSingleton.JEDIS.getJedisCluster();
         UpdateService updateService = new UpdateService(new GroupIdRepositoryJedis(jedis),
                 new InProgressRepositoryJedis(jedis),
                 new UpdatesRepositoryJedis(jedis));
@@ -44,12 +45,7 @@ public class Launcher {
                 String group = takeRandomFromList(ALL_GROUPS);
                 String id = takeRandomFromList(ALL_IDS);
 
-                boolean handled = false;
-                try {
-                    handled = updateService.handleNewUpdates(group, id, generateMessages());
-                } catch (InterruptedException e) {
-                    System.out.println(e);
-                }
+                boolean handled = updateService.handleNewUpdates(group, id, generateMessages());
 
                 if (!handled) {
                     System.out.println("group " + group + " with id " + id + " " + " was not added");
@@ -67,17 +63,16 @@ public class Launcher {
                 String group = takeRandomFromList(ALL_GROUPS);
                 String id = takeRandomFromList(ALL_IDS);
 
-                boolean handled = false;
-                try {
-                    handled = updateService.handleUpdatesForGroup(group, 5 + random.nextInt(10));
-                } catch (InterruptedException e) {
-                    System.out.println(e);
-                }
+                List<Message> updates = updateService.readAllUpdates(group, id);
+                updates.forEach(System.out::println);
+                boolean handled = updateService.deleteOldUpdates(group, id, updates.size());
+
                 if (!handled) {
+                    System.out.println("group " + group + " with id " + id + " size = " + updates.size());
                     System.out.println("group " + group + " with id " + id + " " + " was not handled");
                 }
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                 }
             }

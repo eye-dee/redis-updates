@@ -21,7 +21,7 @@ public class ConnectionFactory {
         jedis = new JedisCluster(jedisClusterNode, 10000, 1, cfg);
     }
 
-    public JedisCluster getJedis() {
+    public static JedisCluster getJedis() {
         return jedis;
 
     }

@@ -21,7 +21,6 @@ public class InProgressRepositoryJedis implements InProgressRepository {
         return jedisCluster.del(generateInProgressId(groupId, id)) == 1;
     }
 
-
     private String generateInProgressId(String groupId, String id) {
         return groupId + "_in_progress_" + id;
     }
