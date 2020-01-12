@@ -3,7 +3,7 @@ package com.redis.repository;
 import redis.clients.jedis.JedisCluster;
 
 public enum JedisSingleton {
-    JEDIS(ConnectionFactory.getJedis());
+    JEDIS(SingletonFactory.getJedis());
 
     private JedisCluster jedisCluster;
 

@@ -1,10 +1,8 @@
 package com.redis;
 
+import com.redis.repository.InfoRepository;
 import com.redis.repository.JedisSingleton;
-import com.redis.repository.jedis.GroupIdRepositoryJedis;
-import com.redis.repository.jedis.InProgressRepositoryJedis;
 import com.redis.repository.jedis.InfoRepositoryJedis;
-import com.redis.repository.jedis.UpdatesRepositoryJedis;
 import com.redis.runner.AllKeysPrinter;
 import com.redis.runner.InfoPrinter;
 import com.redis.runner.Reader;
@@ -19,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
+import static com.redis.repository.InfoRepositorySingleton.INFO_REPOSITORY;
+import static com.redis.repository.UpdateServiceSingleton.UPDATE_SERVICE;
+
 public class Launcher {
 
     private static final Random random = new Random();
@@ -29,10 +30,8 @@ public class Launcher {
 
     public static void main(String[] args) {
         JedisCluster jedis = JedisSingleton.JEDIS.getJedisCluster();
-        UpdateService updateService = new UpdateService(new GroupIdRepositoryJedis(jedis),
-                new InProgressRepositoryJedis(jedis),
-                new UpdatesRepositoryJedis(jedis));
-        InfoRepositoryJedis infoRepositoryJedis = new InfoRepositoryJedis(jedis);
+        UpdateService updateService = UPDATE_SERVICE.getUpdateService();
+        InfoRepository infoRepositoryJedis = INFO_REPOSITORY.getInfoRepository();
 
         jedis.getClusterNodes()
                 .forEach((name, cluster) -> {
