@@ -2,7 +2,6 @@ package com.redis;
 
 import com.redis.repository.InfoRepository;
 import com.redis.repository.JedisSingleton;
-import com.redis.repository.jedis.InfoRepositoryJedis;
 import com.redis.runner.AllKeysPrinter;
 import com.redis.runner.InfoPrinter;
 import com.redis.runner.Reader;
@@ -54,8 +53,8 @@ public class Launcher {
     }
 
     public static String generateString() {
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
+        int leftLimit = 97;
+        int rightLimit = 122;
         int targetStringLength = 10;
 
         return random.ints(leftLimit, rightLimit + 1)

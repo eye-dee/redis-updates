@@ -2,8 +2,6 @@ package com.redis.repository.jedis;
 
 import com.redis.repository.InfoRepository;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 import redis.clients.jedis.JedisCluster;
 
 public class InfoRepositoryJedis implements InfoRepository {
@@ -15,7 +13,13 @@ public class InfoRepositoryJedis implements InfoRepository {
     }
 
     @Override
-    public Map<String, Double> info() {
+    public double info() {
+        double usedMemory = getForParameter("used_memory");
+        double totalSystemMemory = getForParameter("total_system_memory");
+        return usedMemory / totalSystemMemory * 100;
+    }
+
+    private double getForParameter(String parameter) {
         return jedis.getClusterNodes()
                 .entrySet()
                 .stream()
@@ -25,13 +29,13 @@ public class InfoRepositoryJedis implements InfoRepository {
                         .split("\n"))
                         .map(str -> Pair.of(entry.getKey(), str))
                 )
-                .filter(pair -> pair.second.contains("used_memory_dataset_perc"))
+                .filter(pair -> pair.second.contains(parameter + ":"))
                 .map(pair -> Pair.of(pair.first, pair.second
-                        .replace("used_memory_dataset_perc:", "")
-                        .replace("%", "")
-                ))
-                .map(pair -> Pair.of(pair.first, Double.parseDouble(pair.second)))
-                .collect(Collectors.toMap(pair -> pair.first, pair -> pair.second));
+                        .replace(parameter + ":", "")
+                        .replace("%", ""))
+                )
+                .mapToDouble(pair -> Double.parseDouble(pair.second))
+                .sum();
     }
 
     static class Pair<T1, T2> {

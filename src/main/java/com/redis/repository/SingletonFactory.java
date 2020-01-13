@@ -27,8 +27,8 @@ public class SingletonFactory {
         cfg.setMaxIdle(8);
         cfg.setMaxWaitMillis(10000);
         cfg.setTestOnBorrow(true);
-        jedis = new JedisCluster(jedisClusterNode, 10000, 1, 10, "password", cfg);
-//        jedis = new JedisCluster(jedisClusterNode, 10000, 1, cfg);
+//        jedis = new JedisCluster(jedisClusterNode, 10000, 1, 10, "password", cfg);
+        jedis = new JedisCluster(jedisClusterNode, 10000, 1, cfg);
         updateService = new UpdateService(
                 new GroupIdRepositoryJedis(jedis),
                 new InProgressRepositoryJedis(jedis),
