@@ -33,7 +33,8 @@ public class InfoRepositoryJedis implements InfoRepository {
                         .replace("%", ""))
                 )
                 .mapToDouble(pair -> Double.parseDouble(pair.second))
-                .sum();
+                .average()
+                .orElse(0.0);
     }
 
     static class Pair<T1, T2> {
