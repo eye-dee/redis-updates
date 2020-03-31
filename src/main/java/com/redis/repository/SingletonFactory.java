@@ -4,6 +4,7 @@ import com.redis.repository.jedis.GroupIdRepositoryJedis;
 import com.redis.repository.jedis.InProgressRepositoryJedis;
 import com.redis.repository.jedis.InfoRepositoryJedis;
 import com.redis.repository.jedis.UpdatesRepositoryJedis;
+import com.redis.repository.jedis.WatchdogRepositoryJedis;
 import com.redis.service.UpdateService;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,8 @@ public class SingletonFactory {
     private static final UpdateService updateService;
 
     private static final InfoRepository infoRepository;
+
+    private static final WatchdogRepository watchdogRepository;
 
     static {
         Set<HostAndPort> jedisClusterNode = new HashSet<>();
@@ -34,6 +37,7 @@ public class SingletonFactory {
                 new UpdatesRepositoryJedis(jedis));
 
         infoRepository = new InfoRepositoryJedis(jedis);
+        watchdogRepository = new WatchdogRepositoryJedis(jedis);
     }
 
     public static JedisCluster getJedis() {
@@ -47,4 +51,9 @@ public class SingletonFactory {
     public static InfoRepository getInfoRepository() {
         return infoRepository;
     }
+
+    public static WatchdogRepository getWatchdogRepository() {
+        return watchdogRepository;
+    }
+
 }

@@ -4,6 +4,7 @@ import com.redis.repository.WatchdogRepository;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -41,6 +42,11 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
 
         }
         return res;
+    }
+
+    @Override
+    public Optional<String> getKey(String key) {
+        return Optional.ofNullable(jedisCluster.get(key));
     }
 
     public String role(Jedis resource) {

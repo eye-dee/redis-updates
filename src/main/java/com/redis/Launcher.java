@@ -2,9 +2,11 @@ package com.redis;
 
 import com.redis.repository.InfoRepository;
 import com.redis.repository.JedisSingleton;
+import com.redis.repository.WatchdogRepository;
 import com.redis.runner.AllKeysPrinter;
 import com.redis.runner.InfoPrinter;
 import com.redis.runner.Reader;
+import com.redis.runner.UniqueKeysReader;
 import com.redis.runner.Writer;
 import com.redis.service.UpdateService;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ import redis.clients.jedis.JedisCluster;
 
 import static com.redis.repository.InfoRepositorySingleton.INFO_REPOSITORY;
 import static com.redis.repository.UpdateServiceSingleton.UPDATE_SERVICE;
+import static com.redis.repository.WatchdogRepositorySingleton.WATCHDOG_REPOSITORY_SINGLETON;
 
 public class Launcher {
 
@@ -31,6 +34,7 @@ public class Launcher {
         JedisCluster jedis = JedisSingleton.JEDIS.getJedisCluster();
         UpdateService updateService = UPDATE_SERVICE.getUpdateService();
         InfoRepository infoRepositoryJedis = INFO_REPOSITORY.getInfoRepository();
+        WatchdogRepository watchdogRepository = WATCHDOG_REPOSITORY_SINGLETON.getWatchdogRepository();
 
         jedis.getClusterNodes()
                 .forEach((name, cluster) -> {
@@ -41,6 +45,8 @@ public class Launcher {
 
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(5);
 
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(
+                new UniqueKeysReader(watchdogRepository), 5, 10, TimeUnit.SECONDS);
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Writer(updateService), 100, 100, TimeUnit.MILLISECONDS);
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new Reader(updateService), 100, 80, TimeUnit.MILLISECONDS);
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new InfoPrinter(infoRepositoryJedis),
