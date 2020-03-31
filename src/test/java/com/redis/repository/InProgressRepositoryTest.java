@@ -1,14 +1,15 @@
-package com.redis.repository.jedis;
+package com.redis.repository;
 
 import com.redis.repository.InProgressRepository;
 import com.redis.repository.JedisSingleton;
+import com.redis.repository.jedis.InProgressRepositoryJedis;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisCluster;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class InProgressRepositoryJedisTest {
+class InProgressRepositoryTest {
 
     private final JedisCluster jedisCluster = JedisSingleton.JEDIS.getJedisCluster();
 

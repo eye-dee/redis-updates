@@ -14,9 +14,7 @@ public class InfoRepositoryJedis implements InfoRepository {
 
     @Override
     public double info() {
-        double usedMemory = getForParameter("used_memory");
-        double totalSystemMemory = getForParameter("total_system_memory");
-        return usedMemory / totalSystemMemory * 100;
+        return getForParameter("used_memory_dataset_perc");
     }
 
     private double getForParameter(String parameter) {
