@@ -12,8 +12,13 @@ public class InProgressRepositoryJedis implements InProgressRepository {
     }
 
     @Override
-    public boolean takeToProgress(String groupId, String id) {
-        return jedisCluster.setnx(generateInProgressId(groupId, id), "true") == 1;
+    public boolean takeToProgress(String groupId, String id, int timeout) {
+        String key = generateInProgressId(groupId, id);
+        if (jedisCluster.setnx(key, "true") == 1) {
+            return jedisCluster.expire(key, timeout) == 1;
+        } else {
+            return false;
+        }
     }
 
     @Override

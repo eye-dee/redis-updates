@@ -44,7 +44,7 @@ public class UpdateService {
     }
 
     public List<Message> readAllUpdates(String groupId, String id) {
-        if (inProgressRepository.takeToProgress(groupId, id)) {
+        if (inProgressRepository.takeToProgress(groupId, id, 10)) {
             return updatesRepository.takeAllMessagesFromGroup(groupId, id);
         } else {
             return Collections.emptyList();
