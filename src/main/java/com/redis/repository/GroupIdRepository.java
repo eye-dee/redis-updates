@@ -7,4 +7,6 @@ public interface GroupIdRepository {
     boolean addToTheEndForGroup(String groupId, String id);
 
     Optional<String> takeFromHead(String groupId);
+
+    Optional<String> getOldest(String groupId);
 }

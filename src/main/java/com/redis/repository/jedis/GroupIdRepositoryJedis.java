@@ -24,4 +24,11 @@ public class GroupIdRepositoryJedis implements GroupIdRepository {
         AssertionUtil.assertAlive(jedisCluster);
         return Optional.ofNullable(jedisCluster.lpop(groupId));
     }
+
+    @Override
+    public Optional<String> getOldest(String groupId) {
+        AssertionUtil.assertAlive(jedisCluster);
+        return Optional.ofNullable(jedisCluster.llen(groupId))
+                .flatMap(len -> Optional.ofNullable(jedisCluster.lindex(groupId, len - 1)));
+    }
 }
