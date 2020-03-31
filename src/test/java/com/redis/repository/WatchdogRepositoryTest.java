@@ -16,7 +16,7 @@ class WatchdogRepositoryTest {
     private final WatchdogRepository watchdogRepository = new WatchdogRepositoryJedis(jedisCluster);
 
     @Test
-    void initCluster() {
+    void initClusterAndAssertAlive() {
         Map<String, JedisPool> clusterNodes = jedisCluster.getClusterNodes();
 
         Map<String, UUID> stringUUIDMap = watchdogRepository.initCluster();
@@ -26,5 +26,7 @@ class WatchdogRepositoryTest {
         for (String ip : stringUUIDMap.keySet()) {
             assertNotNull(stringUUIDMap.get(ip));
         }
+
+        watchdogRepository.assertAlive(stringUUIDMap);
     }
 }

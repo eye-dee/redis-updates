@@ -38,10 +38,21 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
                         System.out.println("uuid = " + uuid);
                     }
                 }
+                resource.close();
             }
 
         }
         return res;
+    }
+
+    public void assertAlive(Map<String, UUID> uniqueKeys) {
+        for (String key : uniqueKeys.keySet()) {
+            UUID uuid = uniqueKeys.get(key);
+            Optional<String> repositoryKey = getKey(uuid.toString());
+            if (!repositoryKey.isPresent()) {
+                throw new RuntimeException("ip key for resource = " + key + " unique key = " + uuid + " DOESN'T FOUND");
+            }
+        }
     }
 
     @Override
