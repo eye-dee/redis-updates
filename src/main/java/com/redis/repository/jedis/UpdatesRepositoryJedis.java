@@ -2,6 +2,7 @@ package com.redis.repository.jedis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redis.repository.AssertionUtil;
 import com.redis.repository.UpdatesRepository;
 import com.redis.repository.model.Message;
 import java.util.List;
@@ -22,6 +23,7 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
 
     @Override
     public long addUpdatesForGroupId(String groupId, String id, List<Message> updates) {
+        AssertionUtil.assertAlive(jedisCluster);
         return updates.stream()
                 .map(this::serializeExceptionally)
                 .mapToLong(value -> jedisCluster.rpush(generateUniqueId(groupId, id), value))
@@ -30,6 +32,7 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
 
     @Override
     public List<Message> takeAllMessagesFromGroup(String groupId, String id) {
+        AssertionUtil.assertAlive(jedisCluster);
         long len = jedisCluster.llen(generateUniqueId(groupId, id));
         return jedisCluster.lrange(generateUniqueId(groupId, id), 0, len)
                 .stream()
@@ -39,6 +42,7 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
 
     @Override
     public List<Message> takeMessagesFromGroup(String groupId, String id, int number) {
+        AssertionUtil.assertAlive(jedisCluster);
         return jedisCluster.lrange(generateUniqueId(groupId, id), 0, number)
                 .stream()
                 .map(this::readExceptionally)
@@ -47,6 +51,7 @@ public class UpdatesRepositoryJedis implements UpdatesRepository {
 
     @Override
     public long removeMessagesForGroup(String groupId, String id, long numberOfMessages) {
+        AssertionUtil.assertAlive(jedisCluster);
         return LongStream.range(0, numberOfMessages)
                 .mapToObj(i -> jedisCluster.lpop(generateUniqueId(groupId, id)))
                 .filter(Objects::nonNull)

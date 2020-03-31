@@ -1,5 +1,6 @@
 package com.redis.repository.jedis;
 
+import com.redis.repository.AssertionUtil;
 import com.redis.repository.InProgressRepository;
 import redis.clients.jedis.JedisCluster;
 
@@ -13,6 +14,7 @@ public class InProgressRepositoryJedis implements InProgressRepository {
 
     @Override
     public boolean takeToProgress(String groupId, String id, int timeout) {
+        AssertionUtil.assertAlive(jedisCluster);
         String key = generateInProgressId(groupId, id);
         if (jedisCluster.setnx(key, "true") == 1) {
             return jedisCluster.expire(key, timeout) == 1;
@@ -23,6 +25,7 @@ public class InProgressRepositoryJedis implements InProgressRepository {
 
     @Override
     public boolean releaseFromProgress(String groupId, String id) {
+        AssertionUtil.assertAlive(jedisCluster);
         return jedisCluster.del(generateInProgressId(groupId, id)) == 1;
     }
 

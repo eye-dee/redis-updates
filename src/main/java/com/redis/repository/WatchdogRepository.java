@@ -9,6 +9,4 @@ public interface WatchdogRepository {
     Map<String, UUID> initCluster();
 
     Optional<String> getKey(String key);
-
-    void assertAlive(Map<String, UUID> uniqueKeys);
 }

@@ -1,5 +1,6 @@
 package com.redis.repository.jedis;
 
+import com.redis.repository.AssertionUtil;
 import com.redis.repository.WatchdogRepository;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
                     try {
                         resource.set(uuid.toString(), "true");
                         res.put(entry.getKey(), uuid);
+                        AssertionUtil.addKey(entry.getKey(), uuid);
                         break;
                     } catch (RuntimeException ex) {
                         System.out.println(ex.getMessage());
@@ -43,16 +45,6 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
 
         }
         return res;
-    }
-
-    public void assertAlive(Map<String, UUID> uniqueKeys) {
-        for (String key : uniqueKeys.keySet()) {
-            UUID uuid = uniqueKeys.get(key);
-            Optional<String> repositoryKey = getKey(uuid.toString());
-            if (!repositoryKey.isPresent()) {
-                throw new RuntimeException("ip key for resource = " + key + " unique key = " + uuid + " DOESN'T FOUND");
-            }
-        }
     }
 
     @Override

@@ -27,6 +27,6 @@ class WatchdogRepositoryTest {
             assertNotNull(stringUUIDMap.get(ip));
         }
 
-        watchdogRepository.assertAlive(stringUUIDMap);
+        AssertionUtil.assertAlive(jedisCluster);
     }
 }

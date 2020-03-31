@@ -1,5 +1,6 @@
 package com.redis.repository.jedis;
 
+import com.redis.repository.AssertionUtil;
 import com.redis.repository.InfoRepository;
 import java.util.Arrays;
 import redis.clients.jedis.JedisCluster;
@@ -18,6 +19,7 @@ public class InfoRepositoryJedis implements InfoRepository {
     }
 
     private double getForParameter(String parameter) {
+        AssertionUtil.assertAlive(jedis);
         return jedis.getClusterNodes()
                 .entrySet()
                 .stream()
