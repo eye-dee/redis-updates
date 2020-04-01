@@ -1,6 +1,7 @@
 package com.redis.runner;
 
 import com.redis.repository.WatchdogRepository;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -9,7 +10,7 @@ public class UniqueKeysReader implements Runnable {
 
     private final WatchdogRepository watchdogRepository;
 
-    private final Map<String, UUID> uniqueKeys;
+    private final List<UUID> uniqueKeys;
 
     public UniqueKeysReader(WatchdogRepository watchdogRepository) {
         this.watchdogRepository = watchdogRepository;
@@ -19,13 +20,12 @@ public class UniqueKeysReader implements Runnable {
 
     @Override
     public void run() {
-        for (String key : uniqueKeys.keySet()) {
-            UUID uuid = uniqueKeys.get(key);
+        for (UUID uuid : uniqueKeys) {
             Optional<String> repositoryKey = watchdogRepository.getKey(uuid.toString());
             if (repositoryKey.isPresent()) {
-                System.out.println("ip key for resource = " + key + " unique key = " + uuid + " found");
+                System.out.println("unique key = " + uuid + " found");
             } else {
-                System.out.println("ip key for resource = " + key + " unique key = " + uuid + " DOESN'T FOUND");
+                System.out.println("unique key = " + uuid + " DOESN'T FOUND");
             }
         }
     }

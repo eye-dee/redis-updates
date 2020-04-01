@@ -2,14 +2,17 @@ package com.redis.repository.jedis;
 
 import com.redis.repository.AssertionUtil;
 import com.redis.repository.WatchdogRepository;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class WatchdogRepositoryJedis implements WatchdogRepository {
 
@@ -20,30 +23,39 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
     }
 
     @Override
-    public Map<String, UUID> initCluster() {
+    public List<UUID> initCluster() {
         Map<String, JedisPool> clusterNodes = jedisCluster.getClusterNodes();
-        Map<String, UUID> res = new HashMap<>();
+        List<UUID> res = new ArrayList<>();
 
-        for (Map.Entry<String, JedisPool> entry : clusterNodes.entrySet()) {
-            Jedis resource = entry.getValue().getResource();
-            String role = role(resource);
-            if (role.equals("master")) {
-                while (true) {
-                    UUID uuid = UUID.randomUUID();
-                    try {
-                        resource.set(uuid.toString(), "true");
-                        res.put(entry.getKey(), uuid);
-                        AssertionUtil.addKey(entry.getKey(), uuid);
-                        break;
-                    } catch (RuntimeException ex) {
-                        System.out.println(ex.getMessage());
-                        System.out.println("uuid = " + uuid);
+        jedisCluster.getClusterNodes()
+                .values()
+                .stream()
+                .map(JedisPool::getResource)
+                .map(r -> {
+                    List<Object> slots = r.clusterSlots();
+                    r.close();
+                    return slots;
+                })
+                .findFirst()
+                .map(list -> list.stream()
+                        .map(l -> (List<Object>) l)
+                        .map(l -> l.subList(0, 2))
+                        .map(l -> l.stream().map(o -> (Long) o).collect(Collectors.toList()))
+                        .collect(Collectors.toList()))
+                .ifPresent(allSlots -> {
+                    for (List<Long> slots : allSlots) {
+                        UUID uuid = UUID.randomUUID();
+                        long slot = JedisClusterCRC16.getSlot(uuid.toString());
+                        while (slot < slots.get(0) || slot > slots.get(1)) {
+                            uuid = UUID.randomUUID();
+                            slot = JedisClusterCRC16.getSlot(uuid.toString());
+                        }
+                        jedisCluster.set(uuid.toString(), "true");
+                        res.add(uuid);
+                        AssertionUtil.addKey(uuid);
                     }
-                }
-                resource.close();
-            }
+                });
 
-        }
         return res;
     }
 
