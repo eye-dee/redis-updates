@@ -32,17 +32,24 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
         boolean hasAnyKey = false;
         Set<String> keys = new HashSet<>();
         for (Map.Entry<String, JedisPool> entry : jedisCluster.getClusterNodes().entrySet()) {
-            Jedis resource = entry.getValue().getResource();
-            Set<String> nodeKey = resource.keys("UNIQUE-KEYS-*");
-            resource.close();
-            if (nodeKey.isEmpty()) {
+            try {
+                Jedis resource = entry.getValue().getResource();
+                Set<String> nodeKey = resource.keys("UNIQUE-KEYS-*");
+                resource.close();
+                if (nodeKey.isEmpty()) {
+                    if (!keys.isEmpty()) {
+                        keys.clear();
+                        break;
+                    }
+                } else {
+                    hasAnyKey = true;
+                    keys.addAll(nodeKey);
+                }
+            } catch (RuntimeException ex) {
                 if (!keys.isEmpty()) {
                     keys.clear();
                     break;
                 }
-            } else {
-                hasAnyKey = true;
-                keys.addAll(nodeKey);
             }
         }
 
