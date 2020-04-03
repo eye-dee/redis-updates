@@ -10,7 +10,7 @@ public class UniqueKeysReader implements Runnable {
 
     private final WatchdogRepository watchdogRepository;
 
-    private final List<UUID> uniqueKeys;
+    private final List<String> uniqueKeys;
 
     public UniqueKeysReader(WatchdogRepository watchdogRepository) {
         this.watchdogRepository = watchdogRepository;
@@ -20,12 +20,12 @@ public class UniqueKeysReader implements Runnable {
 
     @Override
     public void run() {
-        for (UUID uuid : uniqueKeys) {
-            Optional<String> repositoryKey = watchdogRepository.getKey(uuid.toString());
+        for (String uniqueKey : uniqueKeys) {
+            Optional<String> repositoryKey = watchdogRepository.getKey(uniqueKey);
             if (repositoryKey.isPresent()) {
-                System.out.println("unique key = " + uuid + " found");
+                System.out.println("unique key = " + uniqueKey + " found");
             } else {
-                System.out.println("unique key = " + uuid + " DOESN'T FOUND");
+                System.out.println("unique key = " + uniqueKey + " DOESN'T FOUND");
             }
         }
     }

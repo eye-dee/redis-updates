@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -38,7 +39,7 @@ class WatchdogRepositoryTest {
     void initClusterAndAssertAlive() {
         Map<String, JedisPool> clusterNodes = jedisCluster.getClusterNodes();
 
-        jedisCluster.get("asd234234aaasdasda234234234");
+        jedisCluster.get("asd234234aaasdasqda234234234");
 
         clusterNodes.forEach((ip, node) -> {
             try {
@@ -57,11 +58,11 @@ class WatchdogRepositoryTest {
 
         clusterNodes.forEach((ip, node) -> System.out.println(ip));
 
-        List<UUID> uuids = watchdogRepository.initCluster();
+        List<String> uniqueKeys = watchdogRepository.initCluster();
 
-        assertTrue(uuids.size() > 0);
+        assertTrue(uniqueKeys.size() > 0);
 
-        for (UUID uuid : uuids) {
+        for (String uuid : uniqueKeys) {
             assertNotNull(uuid);
         }
 

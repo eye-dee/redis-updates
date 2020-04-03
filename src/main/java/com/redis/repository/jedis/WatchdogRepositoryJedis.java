@@ -4,9 +4,11 @@ import com.redis.repository.AssertionUtil;
 import com.redis.repository.WatchdogRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import redis.clients.jedis.Jedis;
@@ -23,39 +25,63 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
     }
 
     @Override
-    public List<UUID> initCluster() {
+    public List<String> initCluster() {
         Map<String, JedisPool> clusterNodes = jedisCluster.getClusterNodes();
-        List<UUID> res = new ArrayList<>();
+        List<String> res = new ArrayList<>();
 
-        jedisCluster.getClusterNodes()
-                .values()
-                .stream()
-                .map(JedisPool::getResource)
-                .map(r -> {
-                    List<Object> slots = r.clusterSlots();
-                    r.close();
-                    return slots;
-                })
-                .findFirst()
-                .map(list -> list.stream()
-                        .map(l -> (List<Object>) l)
-                        .map(l -> l.subList(0, 2))
-                        .map(l -> l.stream().map(o -> (Long) o).collect(Collectors.toList()))
-                        .collect(Collectors.toList()))
-                .ifPresent(allSlots -> {
-                    for (List<Long> slots : allSlots) {
-                        UUID uuid = UUID.randomUUID();
-                        long slot = JedisClusterCRC16.getSlot(uuid.toString());
-                        while (slot < slots.get(0) || slot > slots.get(1)) {
-                            uuid = UUID.randomUUID();
-                            slot = JedisClusterCRC16.getSlot(uuid.toString());
+        boolean hasAnyKey = false;
+        Set<String> keys = new HashSet<>();
+        for (Map.Entry<String, JedisPool> entry : jedisCluster.getClusterNodes().entrySet()) {
+            Jedis resource = entry.getValue().getResource();
+            Set<String> nodeKey = resource.keys("UNIQUE-KEYS-*");
+            resource.close();
+            if (nodeKey.isEmpty()) {
+                if (!keys.isEmpty()) {
+                    keys.clear();
+                    break;
+                }
+            } else {
+                hasAnyKey = true;
+                keys.addAll(nodeKey);
+            }
+        }
+
+        if (keys.isEmpty() && !hasAnyKey) {
+            clusterNodes.values()
+                    .stream()
+                    .map(JedisPool::getResource)
+                    .map(r -> {
+                        List<Object> slots = r.clusterSlots();
+                        r.close();
+                        return slots;
+                    })
+                    .findFirst()
+                    .map(list -> list.stream()
+                            .map(l -> (List<Object>) l)
+                            .map(l -> l.subList(0, 2))
+                            .map(l -> l.stream().map(o -> (Long) o).collect(Collectors.toList()))
+                            .collect(Collectors.toList()))
+                    .ifPresent(allSlots -> {
+                        for (List<Long> slots : allSlots) {
+                            String uniqueKey = "UNIQUE-KEYS-" + UUID.randomUUID().toString();
+                            long slot = JedisClusterCRC16.getSlot(uniqueKey);
+                            while (slot < slots.get(0) || slot > slots.get(1)) {
+                                uniqueKey = "UNIQUE-KEYS-" + UUID.randomUUID().toString();
+                                slot = JedisClusterCRC16.getSlot(uniqueKey);
+                            }
+                            jedisCluster.set(uniqueKey, "true");
+                            res.add(uniqueKey);
+                            AssertionUtil.addKey(uniqueKey);
                         }
-                        jedisCluster.set(uuid.toString(), "true");
-                        res.add(uuid);
-                        AssertionUtil.addKey(uuid);
-                    }
-                });
-
+                    });
+        } else if (keys.isEmpty()) {
+            AssertionUtil.openCircuit();
+        } else {
+            for (String key : keys) {
+                AssertionUtil.addKey(key);
+                res.add(key);
+            }
+        }
         return res;
     }
 
