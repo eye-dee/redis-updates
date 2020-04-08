@@ -24,6 +24,8 @@ public class SingletonFactory {
 
     private static final GroupIdRepository groupIdRepository;
 
+    private static final InProgressRepositoryJedis inProgressRepository;
+
     static {
         Set<HostAndPort> jedisClusterNode = new HashSet<>();
         jedisClusterNode.add(new HostAndPort("localhost", 7000));
@@ -34,9 +36,10 @@ public class SingletonFactory {
         cfg.setTestOnBorrow(true);
         jedis = new JedisCluster(jedisClusterNode, 10000, 1, cfg);
         groupIdRepository = new GroupIdRepositoryJedis(jedis);
+        inProgressRepository = new InProgressRepositoryJedis(jedis);
         updateService = new UpdateService(
                 groupIdRepository,
-                new InProgressRepositoryJedis(jedis),
+                inProgressRepository,
                 new UpdatesRepositoryJedis(jedis));
 
         infoRepository = new InfoRepositoryJedis(jedis);
@@ -61,5 +64,8 @@ public class SingletonFactory {
 
     public static GroupIdRepository getGroupIdRepository() {
         return groupIdRepository;
+    }
+    public static InProgressRepositoryJedis getInProgressRepository() {
+        return inProgressRepository;
     }
 }

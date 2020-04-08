@@ -44,4 +44,12 @@ public class Message {
     public int hashCode() {
         return Objects.hash(type, message);
     }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "type='" + type + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

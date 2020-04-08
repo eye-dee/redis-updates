@@ -96,14 +96,4 @@ public class WatchdogRepositoryJedis implements WatchdogRepository {
     public Optional<String> getKey(String key) {
         return Optional.ofNullable(jedisCluster.get(key));
     }
-
-    public String role(Jedis resource) {
-        return Arrays.stream(resource.info().split("\n"))
-                .map(str -> str.split(":"))
-                .filter(arr -> arr[0].contains("role"))
-                .map(arr -> arr[1])
-                .findAny()
-                .map(String::trim)
-                .orElse("slave");
-    }
 }
