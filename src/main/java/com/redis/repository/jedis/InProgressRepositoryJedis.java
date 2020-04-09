@@ -17,11 +17,7 @@ public class InProgressRepositoryJedis implements InProgressRepository {
         AssertionUtil.assertAlive(jedisCluster);
         String key = generateInProgressId(groupId, id);
         if (jedisCluster.setnx(key, "true") == 1) {
-            if (jedisCluster.set(key + "-expire", "expire") != null) {
-                return jedisCluster.expire(key + "-expire", 2) == 1;
-            } else {
-                return false;
-            }
+            return jedisCluster.expire(key, timeout) == 1;
         } else {
             return false;
         }

@@ -10,5 +10,4 @@ docker run  -e "IP=0.0.0.0" -p "7000:7000"\
  -p "7007:7007" \
  -p "7008:7008" \
  -p "7009:7009" \
- -v "redis:/redis" \
  -e MASTERS=5 grokzen/redis-cluster:latest
