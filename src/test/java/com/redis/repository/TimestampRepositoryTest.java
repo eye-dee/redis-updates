@@ -4,6 +4,7 @@ import com.redis.model.TimestampRecord;
 import com.redis.repository.jedis.TimestampRepositoryJedis;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.JedisCluster;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimestampRepositoryTest {
 
-    private final TimestampRepository timestampRepository = new TimestampRepositoryJedis();
+    private JedisCluster jedis;
+    private final TimestampRepository timestampRepository = new TimestampRepositoryJedis(jedis);
 
     @Test
     void addNewTimestampRecord() {
