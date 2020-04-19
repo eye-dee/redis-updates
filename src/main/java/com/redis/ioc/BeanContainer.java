@@ -1,10 +1,14 @@
 package com.redis.ioc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redis.repository.LockRepository;
+import com.redis.repository.TimestampRepository;
+import com.redis.repository.UpdateRepository;
 import com.redis.repository.jedis.LockRepositoryJedis;
 import com.redis.repository.jedis.TimestampRepositoryJedis;
 import com.redis.repository.jedis.UpdateRepositoryJedis;
 import com.redis.service.RedisMapper;
+import com.redis.service.UpdateService;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import redis.clients.jedis.JedisCluster;
@@ -27,6 +31,11 @@ public class BeanContainer {
         ));
         beans.put("lockRepository", new LockRepositoryJedis(
                 getBean("jedisCluster", JedisCluster.class)
+        ));
+        beans.put("updateService", new UpdateService(
+                getBean("lockRepository", LockRepository.class),
+                getBean("timestampRepository", TimestampRepository.class),
+                getBean("updateRepository", UpdateRepository.class)
         ));
     }
 
