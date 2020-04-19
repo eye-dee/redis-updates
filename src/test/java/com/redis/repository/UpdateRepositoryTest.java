@@ -33,7 +33,8 @@ class UpdateRepositoryTest {
 
         List<Update> expected1 = Arrays.asList(update1, update2);
 
-        long res = updateRepository.addNewUpdatesForGroup(group, id, expected1);
+        assertEquals(1, updateRepository.addNewUpdatesForGroup(group, id, update1));
+        long res = updateRepository.addNewUpdatesForGroup(group, id, update2);
 
         assertEquals(2, res);
 
@@ -42,7 +43,7 @@ class UpdateRepositoryTest {
 
         Update update3 = new Update(group, id, "update1", 1);
 
-        long res2 = updateRepository.addNewUpdatesForGroup(group, id, Collections.singletonList(update3));
+        long res2 = updateRepository.addNewUpdatesForGroup(group, id, update3);
         assertEquals(3, res2);
 
         List<Update> expected2 = Arrays.asList(update1, update2, update3);
@@ -61,8 +62,8 @@ class UpdateRepositoryTest {
 
         List<Update> expected = Arrays.asList(update1, update2);
 
-        long res1 = updateRepository.addNewUpdatesForGroup(group, id, Collections.singletonList(update1));
-        long res2 = updateRepository.addNewUpdatesForGroup(group, id, Collections.singletonList(update2));
+        long res1 = updateRepository.addNewUpdatesForGroup(group, id, update1);
+        long res2 = updateRepository.addNewUpdatesForGroup(group, id, update2);
 
         assertEquals(1, res1);
         assertEquals(2, res2);
@@ -81,7 +82,9 @@ class UpdateRepositoryTest {
 
         List<Update> expected1 = Arrays.asList(update1, update2, update3);
 
-        long res = updateRepository.addNewUpdatesForGroup(group, id, expected1);
+        assertEquals(1, updateRepository.addNewUpdatesForGroup(group, id, update1));
+        assertEquals(2, updateRepository.addNewUpdatesForGroup(group, id, update2));
+        long res = updateRepository.addNewUpdatesForGroup(group, id, update3);
 
         assertEquals(3, res);
 

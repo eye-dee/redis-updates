@@ -21,12 +21,9 @@ public class UpdateRepositoryJedis implements UpdateRepository {
     }
 
     @Override
-    public long addNewUpdatesForGroup(String group, String id, List<Update> updates) {
-        String[] toInsert = updates.stream()
-                .map(redisMapper::toRedisEntity)
-                .toArray(String[]::new);
-
-        return jedisCluster.rpush(generateKey(group, id), toInsert);
+    public long addNewUpdatesForGroup(String group, String id, Update update) {
+        String entity = redisMapper.toRedisEntity(update);
+        return jedisCluster.rpush(generateKey(group, id), entity);
     }
 
     @Override

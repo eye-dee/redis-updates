@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface UpdateRepository {
 
-    long addNewUpdatesForGroup(String group, String id, List<Update> updates);
+    long addNewUpdatesForGroup(String group, String id, Update update);
 
     long deleteElementsFromLeft(String group, String id, int number);
 
