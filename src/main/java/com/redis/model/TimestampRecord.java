@@ -2,6 +2,7 @@ package com.redis.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 
 public class TimestampRecord {
 
@@ -39,5 +40,31 @@ public class TimestampRecord {
 
     public long getKafkaOffset() {
         return kafkaOffset;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TimestampRecord that = (TimestampRecord) o;
+        return kafkaOffset == that.kafkaOffset &&
+                Objects.equals(groupId, that.groupId) &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(timestamp, that.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupId, id, timestamp, kafkaOffset);
+    }
+
+    @Override
+    public String toString() {
+        return "TimestampRecord{" +
+                "groupId='" + groupId + '\'' +
+                ", id='" + id + '\'' +
+                ", timestamp='" + timestamp + '\'' +
+                ", kafkaOffset=" + kafkaOffset +
+                '}';
     }
 }

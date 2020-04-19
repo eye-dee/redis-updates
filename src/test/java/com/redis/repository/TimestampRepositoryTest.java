@@ -1,8 +1,12 @@
 package com.redis.repository;
 
+import com.redis.RedisCleaner;
+import com.redis.ioc.BeanContainer;
 import com.redis.model.TimestampRecord;
 import com.redis.repository.jedis.TimestampRepositoryJedis;
+import com.redis.service.RedisMapper;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisCluster;
 
@@ -12,12 +16,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimestampRepositoryTest {
 
-    private JedisCluster jedis;
-    private final TimestampRepository timestampRepository = new TimestampRepositoryJedis(jedis);
+    private final TimestampRepository timestampRepository = new TimestampRepositoryJedis(
+            BeanContainer.getBean("jedisCluster", JedisCluster.class),
+            BeanContainer.getBean("redisMapper", RedisMapper.class)
+    );
+
+    @BeforeAll
+    public static void cleanRedis() {
+        JedisCluster jedisCluster = BeanContainer.getBean("jedisCluster", JedisCluster.class);
+        RedisCleaner.cleanRedis(jedisCluster);
+    }
 
     @Test
     void addNewTimestampRecord() {
-        String groupId = "groupId";
+        String groupId = "groupId1";
         TimestampRecord record = new TimestampRecord(groupId, "id", "timestamp", 1);
 
         boolean added = timestampRepository.addNewTimestampRecord(record);
@@ -31,7 +43,7 @@ class TimestampRepositoryTest {
 
     @Test
     void getOldestTestEmpty() {
-        String groupId = "groupId";
+        String groupId = "groupId2";
 
         Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
         assertFalse(actual.isPresent());
@@ -39,7 +51,7 @@ class TimestampRepositoryTest {
 
     @Test
     void getOldestTestFull() {
-        String groupId = "groupId";
+        String groupId = "groupId3";
         TimestampRecord record = new TimestampRecord(groupId, "id", "timestamp", 1);
 
         timestampRepository.addNewTimestampRecord(record);
@@ -51,7 +63,7 @@ class TimestampRepositoryTest {
 
     @Test
     void takeFromHeadTest() {
-        String groupId = "groupId";
+        String groupId = "groupId4";
         TimestampRecord record1 = new TimestampRecord(groupId, "id1", "timestamp", 1);
         TimestampRecord record2 = new TimestampRecord(groupId, "id2", "timestamp", 1);
 
@@ -69,5 +81,11 @@ class TimestampRepositoryTest {
         Optional<TimestampRecord> actual2 = timestampRepository.takeFromHead(groupId);
         assertTrue(actual2.isPresent());
         assertEquals(record2, actual2.get());
+    }
+
+    @Test
+    public void takeFromHeadEmpty() {
+        Optional<TimestampRecord> actual = timestampRepository.takeFromHead("groupId");
+        assertFalse(actual.isPresent());
     }
 }
