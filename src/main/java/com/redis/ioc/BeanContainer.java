@@ -1,6 +1,7 @@
 package com.redis.ioc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redis.repository.jedis.LockRepositoryJedis;
 import com.redis.repository.jedis.TimestampRepositoryJedis;
 import com.redis.repository.jedis.UpdateRepositoryJedis;
 import com.redis.service.RedisMapper;
@@ -23,6 +24,9 @@ public class BeanContainer {
         beans.put("updateRepository", new UpdateRepositoryJedis(
                 getBean("jedisCluster", JedisCluster.class),
                 getBean("redisMapper", RedisMapper.class)
+        ));
+        beans.put("lockRepository", new LockRepositoryJedis(
+                getBean("jedisCluster", JedisCluster.class)
         ));
     }
 
