@@ -6,6 +6,7 @@ import com.redis.repository.LockRepository;
 import com.redis.repository.TimestampRepository;
 import com.redis.repository.UpdateRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class UpdateService {
@@ -35,21 +36,36 @@ public class UpdateService {
         return false;
     }
 
-//    public boolean readUpdates(String groupId) {
-//        timestampRepository.takeFromHead(groupId)
-//                .map(rec -> Pair.of(rec,updateRepository.getAllUpdates(rec.getGroupId(), rec.getId())))
-//                .filter(pair -> !pair.getValue().isEmpty())
-//                .filter(pair -> pair.getValue().get(0).getKafkaOffset() == pair.getKey().getKafkaOffset())
-//                .filter(pair -> lockRepository.acquireLockForLogic(pair.getKey().getGroupId(), pair.getKey().getId()))
-//                .map(pair -> {
-//                    pair.getValue().forEach(System.out::println);
-//                    if (lockRepository.acquireLockForChange(pair.getKey().getGroupId(), pair.getKey().getId())) {
-//                        updateRepository.deleteElementsFromLeft(
-//                                pair.getKey().getGroupId(),
-//                                pair.getKey().getId(),
-//                                pair.getValue().size());
-//                        lockRepository.releaseLockForChange(pair.getKey().getGroupId(), pair.getKey().getId());
-//                    }
-//                });
-//    }
+    public void readUpdates(String groupId) {
+        List<TimestampRecord> recs = timestampRepository.getFirst(groupId, 5);
+        boolean anyMatched = false;
+        int lastNotMatched = 0;
+        for (int i = 0; i < recs.size(); i++) {
+            TimestampRecord rec = recs.get(i);
+            List<Update> updates = updateRepository.getAllUpdates(rec.getGroupId(), rec.getId());
+            if (updates.isEmpty()) {
+                lastNotMatched = i;
+                continue;
+            }
+            if (updates.get(0).getKafkaOffset() != rec.getKafkaOffset()) {
+                lastNotMatched = i;
+                continue;
+            }
+            if (!lockRepository.acquireLockForLogic(rec.getGroupId(), rec.getId())) {
+                break;
+            }
+            updates.forEach(System.out::println);
+            if (!lockRepository.acquireLockForChange(rec.getGroupId(), rec.getId())) {
+                break;
+            }
+            updateRepository.deleteElementsFromLeft(rec.getGroupId(), rec.getId(), updates.size());
+            timestampRepository.deleteFirstForGroup(groupId, i);
+            lockRepository.releaseLockForLogic(rec.getGroupId(), rec.getId());
+            lockRepository.releaseLockForChange(rec.getGroupId(), rec.getId());
+            anyMatched = true;
+        }
+        if (lastNotMatched >= 4) {
+            timestampRepository.deleteFirstForGroup(groupId, lastNotMatched + 1);
+        }
+    }
 }

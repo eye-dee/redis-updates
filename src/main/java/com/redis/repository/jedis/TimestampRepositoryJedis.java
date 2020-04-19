@@ -1,7 +1,6 @@
 package com.redis.repository.jedis;
 
 import com.redis.model.TimestampRecord;
-import com.redis.model.Update;
 import com.redis.repository.TimestampRepository;
 import com.redis.service.RedisMapper;
 import java.util.Collections;
