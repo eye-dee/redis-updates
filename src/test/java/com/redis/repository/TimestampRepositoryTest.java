@@ -3,7 +3,7 @@ package com.redis.repository;
 import com.redis.RedisCleaner;
 import com.redis.ioc.BeanContainer;
 import com.redis.model.TimestampRecord;
-import java.util.Optional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisCluster;
@@ -34,17 +34,17 @@ class TimestampRepositoryTest {
 
         assertTrue(added);
 
-        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
-        assertTrue(actual.isPresent());
-        assertEquals(record, actual.get());
+        List<TimestampRecord> actual = timestampRepository.getFirst(groupId, 1);
+        assertFalse(actual.isEmpty());
+        assertEquals(record, actual.get(0));
     }
 
     @Test
     void getOldestTestEmpty() {
         String groupId = "groupId2";
 
-        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
-        assertFalse(actual.isPresent());
+        List<TimestampRecord> actual = timestampRepository.getFirst(groupId, 10);
+        assertTrue(actual.isEmpty());
     }
 
     @Test
@@ -54,9 +54,9 @@ class TimestampRepositoryTest {
 
         timestampRepository.addNewTimestampRecord(record);
 
-        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
-        assertTrue(actual.isPresent());
-        assertEquals(record, actual.get());
+        List<TimestampRecord> actual = timestampRepository.getFirst(groupId, 10);
+        assertFalse(actual.isEmpty());
+        assertEquals(record, actual.get(0));
     }
 
     @Test
@@ -68,17 +68,16 @@ class TimestampRepositoryTest {
         timestampRepository.addNewTimestampRecord(record1);
         timestampRepository.addNewTimestampRecord(record2);
 
-        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
-        assertTrue(actual.isPresent());
-        assertEquals(record1, actual.get());
+        List<TimestampRecord> actual = timestampRepository.getFirst(groupId, 10);
+        assertFalse(actual.isEmpty());
+        assertEquals(record1, actual.get(0));
+        assertEquals(record2, actual.get(1));
 
-        Optional<TimestampRecord> actual1 = timestampRepository.takeFromHead(groupId);
-        assertTrue(actual1.isPresent());
-        assertEquals(record1, actual1.get());
+        assertEquals(1, timestampRepository.deleteFirstForGroup(groupId, 1));
 
-        Optional<TimestampRecord> actual2 = timestampRepository.takeFromHead(groupId);
-        assertTrue(actual2.isPresent());
-        assertEquals(record2, actual2.get());
+        List<TimestampRecord> actual2 = timestampRepository.getFirst(groupId, 10);
+        assertFalse(actual.isEmpty());
+        assertEquals(record2, actual2.get(0));
     }
 
     @Test
@@ -90,14 +89,15 @@ class TimestampRepositoryTest {
         timestampRepository.addNewTimestampRecord(record1);
         timestampRepository.addNewTimestampRecord(record2);
 
-        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
-        assertTrue(actual.isPresent());
-        assertEquals(record1, actual.get());
+        List<TimestampRecord> actual = timestampRepository.getFirst(groupId, 1);
+        assertFalse(actual.isEmpty());
+        assertEquals(record1, actual.get(0));
+        assertEquals(1, actual.size());
     }
 
     @Test
     public void takeFromHeadEmpty() {
-        Optional<TimestampRecord> actual = timestampRepository.takeFromHead("groupId");
-        assertFalse(actual.isPresent());
+        long actual = timestampRepository.deleteFirstForGroup("groupId", 10);
+        assertEquals(0, actual);
     }
 }

@@ -1,13 +1,14 @@
 package com.redis.repository;
 
 import com.redis.model.TimestampRecord;
+import java.util.List;
 import java.util.Optional;
 
 public interface TimestampRepository {
 
     boolean addNewTimestampRecord(TimestampRecord record);
 
-    Optional<TimestampRecord> takeFromHead(String groupId);
+    List<TimestampRecord> getFirst(String groupId, int n);
 
-    Optional<TimestampRecord> getOldest(String groupId);
+    long deleteFirstForGroup(String group, int n);
 }
