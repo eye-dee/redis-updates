@@ -19,8 +19,20 @@ public class LockRepositoryJedis implements LockRepository {
     }
 
     @Override
+    public boolean releaseLockForChange(String group, String id) {
+        String key = generateKeyForChanges(group, id);
+        return jedisCluster.del(key) == 1;
+    }
+
+    @Override
     public boolean acquireLockForLogic(String group, String id) {
         return acquireLockForKey(generateKeyForProgress(group, id));
+    }
+
+    @Override
+    public boolean releaseLockForLogic(String group, String id) {
+        String key = generateKeyForProgress(group, id);
+        return jedisCluster.del(key) == 1;
     }
 
     private boolean acquireLockForKey(String key) {

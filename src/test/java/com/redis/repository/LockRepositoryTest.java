@@ -76,4 +76,30 @@ class LockRepositoryTest {
         assertTrue(lockRepository.acquireLockForLogic(group, id));
         assertFalse(lockRepository.acquireLockForLogic(group, id));
     }
+
+    @Test
+    public void testReleaseLockFalse() {
+        String group = "group7";
+        String id = "id7";
+        assertFalse(lockRepository.releaseLockForChange(group, id));
+        assertFalse(lockRepository.releaseLockForLogic(group, id));
+    }
+
+    @Test
+    public void testReleaseLockTrue() {
+        String group = "group8";
+        String id = "id8";
+        assertTrue(lockRepository.acquireLockForLogic(group, id));
+        assertTrue(lockRepository.acquireLockForChange(group, id));
+
+        assertTrue(lockRepository.releaseLockForChange(group, id));
+        assertTrue(lockRepository.releaseLockForLogic(group, id));
+
+
+        assertTrue(lockRepository.acquireLockForLogic(group, id));
+        assertTrue(lockRepository.acquireLockForChange(group, id));
+
+        assertTrue(lockRepository.releaseLockForChange(group, id));
+        assertTrue(lockRepository.releaseLockForLogic(group, id));
+    }
 }
