@@ -3,8 +3,6 @@ package com.redis.repository;
 import com.redis.RedisCleaner;
 import com.redis.ioc.BeanContainer;
 import com.redis.model.TimestampRecord;
-import com.redis.repository.jedis.TimestampRepositoryJedis;
-import com.redis.service.RedisMapper;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimestampRepositoryTest {
 
-    private final TimestampRepository timestampRepository = new TimestampRepositoryJedis(
-            BeanContainer.getBean("jedisCluster", JedisCluster.class),
-            BeanContainer.getBean("redisMapper", RedisMapper.class)
+    private final TimestampRepository timestampRepository = BeanContainer.getBean(
+            "timestampRepository",
+            TimestampRepository.class
     );
 
     @BeforeAll
