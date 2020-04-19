@@ -84,6 +84,20 @@ class TimestampRepositoryTest {
     }
 
     @Test
+    void getOldestTestTwoFull() {
+        String groupId = "groupId5";
+        TimestampRecord record1 = new TimestampRecord(groupId, "id1", "timestamp", 1);
+        TimestampRecord record2 = new TimestampRecord(groupId, "id2", "timestamp", 1);
+
+        timestampRepository.addNewTimestampRecord(record1);
+        timestampRepository.addNewTimestampRecord(record2);
+
+        Optional<TimestampRecord> actual = timestampRepository.getOldest(groupId);
+        assertTrue(actual.isPresent());
+        assertEquals(record1, actual.get());
+    }
+
+    @Test
     public void takeFromHeadEmpty() {
         Optional<TimestampRecord> actual = timestampRepository.takeFromHead("groupId");
         assertFalse(actual.isPresent());
