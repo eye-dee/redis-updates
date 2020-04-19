@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -16,18 +17,14 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 public class MyKafkaConsumer {
 
     private String topic;
-
     private String groupId;
-
     private Consumer<String, String> consumer;
-
     private volatile boolean assigned;
-
     private String bootstrapServers;
 
     public static void main(String... a) {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            MyKafkaConsumer myKafkaConsumer1 = new MyKafkaConsumer("localhost:9092", "11", "bbbb");
+            MyKafkaConsumer myKafkaConsumer1 = new MyKafkaConsumer("localhost:9091", "99", "yy66");
             final Iterable<Object> iterable1 = myKafkaConsumer1.poll();
             if (iterable1 != null && iterable1.iterator().hasNext()) {
                 System.out.println("cons1 msg = " + iterable1.iterator().next());
@@ -43,14 +40,33 @@ public class MyKafkaConsumer {
             }
             myKafkaConsumer1.close();
         });
-        MyKafkaConsumer myKafkaConsumer2 = new MyKafkaConsumer("localhost:9092", "11", "cccc");
-        System.out.println("polling");
+
+        MyKafkaConsumer myKafkaConsumer2 = new MyKafkaConsumer("localhost:9091", "99", "yyy66");
         final Iterable<Object> iterable2 = myKafkaConsumer2.poll();
         if (iterable2 != null && iterable2.iterator().hasNext()) {
             System.out.println("cons2 msg = " + iterable2.iterator().next());
         }
-
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        final Iterable<Object> iterable22 = myKafkaConsumer2.poll();
+        if (iterable22 != null && iterable22.iterator().hasNext()) {
+            System.out.println("cons2 msg = " + iterable22.iterator().next());
+        }
         myKafkaConsumer2.close();
+
+// MyKafkaConsumer myKafkaConsumer2 = new MyKafkaConsumer("10.21.2.37:9093", "9", "kkkk9");
+// for (int i = 0; i <= 1; i++) {
+// System.out.println("polling");
+// final Iterable<Object> iterable2 = myKafkaConsumer2.poll();
+// if (iterable2 != null && iterable2.iterator().hasNext()) {
+// System.out.println("cons2 msg = " + iterable2.iterator().next());
+// }
+// }
+
+// myKafkaConsumer2.close();
         future.join();
     }
 
@@ -63,17 +79,14 @@ public class MyKafkaConsumer {
 
     private Properties initProps() {
         Properties props = new Properties();
-
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", bootstrapServers);
         props.put("group.id", groupId);
         props.put("enable.auto.commit", "false");
         props.put("auto.commit.interval.ms", "1000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("auto.offset.reset", "earliest");
-
         props.put("max.poll.records", 1);
-
         return props;
     }
 
@@ -97,9 +110,7 @@ public class MyKafkaConsumer {
                     .map(ConsumerRecord::value)
                     .collect(Collectors.toList()));
         }
-
         consumer.commitSync();
-
         return list.isEmpty() ? null : list;
     }
 

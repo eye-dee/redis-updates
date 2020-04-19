@@ -26,7 +26,7 @@ public class SingletonFactory {
 
     static {
         Set<HostAndPort> jedisClusterNode = new HashSet<>();
-        jedisClusterNode.add(new HostAndPort("localhost", 7000));
+        jedisClusterNode.add(new HostAndPort("localhost", 7001));
         JedisPoolConfig cfg = new JedisPoolConfig();
         cfg.setMaxTotal(16);
         cfg.setMaxIdle(8);

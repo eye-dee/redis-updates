@@ -21,7 +21,7 @@ public class MyKafkaConsumer2 {
 
     private String bootstrapServers;
 
-    public static void main(String... a) throws InterruptedException, ExecutionException {
+    public static void main(String... a) {
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -34,7 +34,7 @@ public class MyKafkaConsumer2 {
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList("cccc"));
-        for (int i = 0; i < 40; i++) {
+        for (;;) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
             for (ConsumerRecord<String, String> record : records)
                 System.out.printf(
@@ -42,20 +42,5 @@ public class MyKafkaConsumer2 {
                         record.offset(), record.key(), record.value());
             consumer.commitSync();
         }
-
-        consumer.unsubscribe();
-        consumer.close();
-//        executorService.execute(() -> {
-//            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-//            consumer.subscribe(Collections.singletonList("bbbb"));
-//            while (true) {
-//                ConsumerRecords<String, String> records = consumer.poll(100);
-//                for (ConsumerRecord<String, String> record : records)
-//                    System.out.printf(
-//                            "SECOND offset = %d, key = %s, value = %s%n",
-//                            record.offset(), record.key(), record.value());
-//            }
-//        });
-
     }
 }

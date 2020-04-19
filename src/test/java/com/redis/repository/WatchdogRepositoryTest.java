@@ -39,7 +39,7 @@ class WatchdogRepositoryTest {
     void initClusterAndAssertAlive() {
         Map<String, JedisPool> clusterNodes = jedisCluster.getClusterNodes();
 
-        jedisCluster.get("asd234234aaasdasqda234234234");
+        jedisCluster.get("asd234231231234aaasdasqda234234234");
 
         clusterNodes.forEach((ip, node) -> {
             try {
