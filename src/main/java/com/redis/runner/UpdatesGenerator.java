@@ -27,11 +27,11 @@ public class UpdatesGenerator implements Runnable {
     public void run() {
         String groupId = Application.GROUPS.get(random.nextInt(Application.GROUPS.size()));
         String id = Application.IDS.get(random.nextInt(Application.GROUPS.size()));
-        updateService.handleNewUpdate(
-                groupId,
-                id,
-                new Update(groupId, id, randomString(), offsets.get(groupId)));
-        offsets.computeIfPresent(groupId, (gr, of) -> of + 1);
+        if (updateService.handleNewUpdate(
+                groupId, id, new Update(groupId, id, randomString(), offsets.get(groupId))
+        )) {
+            offsets.computeIfPresent(groupId, (gr, of) -> of + 1);
+        }
     }
 
     private String randomString() {

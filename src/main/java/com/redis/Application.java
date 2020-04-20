@@ -21,11 +21,11 @@ public class Application {
     public static void main(String[] args) {
         UpdateService updateService = BeanContainer.getBean("updateService", UpdateService.class);
         service.scheduleAtFixedRate(
-                new UpdatesGenerator(updateService), 100, 100, TimeUnit.MILLISECONDS
+                new UpdatesGenerator(updateService), 10, 10, TimeUnit.MILLISECONDS
         );
 
         service.scheduleAtFixedRate(
-                new UpdatesReader(updateService), 100, 100, TimeUnit.MILLISECONDS
+                new UpdatesReader(updateService), 2, 2, TimeUnit.MILLISECONDS
         );
     }
 

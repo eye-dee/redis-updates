@@ -63,6 +63,7 @@ public class UpdateService {
             lockRepository.releaseLockForLogic(rec.getGroupId(), rec.getId());
             lockRepository.releaseLockForChange(rec.getGroupId(), rec.getId());
             anyMatched = true;
+            break;
         }
         if (lastNotMatched >= 4) {
             timestampRepository.deleteFirstForGroup(groupId, lastNotMatched + 1);
