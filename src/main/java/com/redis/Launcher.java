@@ -50,6 +50,7 @@ public class Launcher {
                     Jedis resource = cluster.getResource();
                     Set<String> keys = resource.keys("*");
                     keys.forEach(jedis::del);
+                    resource.close();
                 });
 
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(5);

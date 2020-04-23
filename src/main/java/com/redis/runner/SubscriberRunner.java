@@ -47,6 +47,8 @@ public class SubscriberRunner implements Runnable {
                                 }
                             }
                         });
+                    } else {
+                        resource.close();
                     }
                 });
     }
