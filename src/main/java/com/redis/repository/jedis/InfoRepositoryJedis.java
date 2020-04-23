@@ -3,7 +3,10 @@ package com.redis.repository.jedis;
 import com.redis.repository.AssertionUtil;
 import com.redis.repository.InfoRepository;
 import java.util.Arrays;
+import java.util.Map;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 
 public class InfoRepositoryJedis implements InfoRepository {
 
@@ -23,9 +26,7 @@ public class InfoRepositoryJedis implements InfoRepository {
         return jedis.getClusterNodes()
                 .entrySet()
                 .stream()
-                .flatMap(entry -> Arrays.stream(entry.getValue()
-                        .getResource()
-                        .info()
+                .flatMap(entry -> Arrays.stream(getInfoAndClose(entry)
                         .split("\n"))
                         .map(str -> Pair.of(entry.getKey(), str))
                 )
@@ -37,6 +38,15 @@ public class InfoRepositoryJedis implements InfoRepository {
                 .mapToDouble(pair -> Double.parseDouble(pair.second))
                 .average()
                 .orElse(0.0);
+    }
+
+    private String getInfoAndClose(Map.Entry<String, JedisPool> entry) {
+        Jedis resource = entry.getValue()
+                .getResource();
+        String result = resource
+                .info();
+        resource.close();
+        return result;
     }
 
     static class Pair<T1, T2> {
