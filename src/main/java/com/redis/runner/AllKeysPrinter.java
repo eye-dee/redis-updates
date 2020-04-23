@@ -1,6 +1,7 @@
 package com.redis.runner;
 
 import java.util.Set;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 public class AllKeysPrinter implements Runnable {
@@ -16,8 +17,10 @@ public class AllKeysPrinter implements Runnable {
         jedis.getClusterNodes()
                 .values()
                 .forEach(j -> {
-                    Set<String> keys = j.getResource().keys("*");
+                    Jedis resource = j.getResource();
+                    Set<String> keys = resource.keys("*");
                     System.out.println(keys);
+                    resource.close();
                 });
 
     }
